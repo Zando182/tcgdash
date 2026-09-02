@@ -88,6 +88,31 @@ export function leggiRegistro(testo: string): Registro {
   return { match, extra: dati.extra ?? {} }
 }
 
+/**
+ * I match del primo elenco che non hanno una controparte nel secondo.
+ *
+ * Conta le occorrenze invece di usare un insieme di impronte: due partite dello
+ * stesso giorno, stesso matchup, stesso esito e senza note hanno la stessa
+ * impronta pur essendo due partite diverse, e con un insieme la seconda
+ * sparirebbe.
+ */
+function nonPresentiIn(elenco: Match[], riferimento: Match[]): Match[] {
+  const capienza = new Map<string, number>()
+  for (const m of riferimento) {
+    const k = impronta(m)
+    capienza.set(k, (capienza.get(k) ?? 0) + 1)
+  }
+  return elenco.filter((m) => {
+    const k = impronta(m)
+    const n = capienza.get(k) ?? 0
+    if (n > 0) {
+      capienza.set(k, n - 1)
+      return false
+    }
+    return true
+  })
+}
+
 /** Dal piu' recente: e' l'ordine del registro e la fonte dei valori precompilati nel form. */
 function perDataDecrescente(match: Match[]): Match[] {
   return [...match].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0))
@@ -95,12 +120,14 @@ function perDataDecrescente(match: Match[]): Match[] {
 
 /**
  * L'ordine in cui il registro viene mandato al workbook: dal piu' vecchio, che
- * e' l'ordine delle righe del foglio. Invertire quello mostrato a schermo
- * mantiene, fra partite dello stesso giorno, la sequenza in cui sono state
- * giocate.
+ * e' l'ordine delle righe del foglio.
+ *
+ * E' un ordinamento stabile sulla sola data, non un `reverse()` di quello
+ * mostrato a schermo: rovesciare l'elenco ribalterebbe anche le partite dello
+ * stesso giorno, invertendone l'ordine nel foglio a ogni salvataggio.
  */
 function perFoglio(match: Match[]): Match[] {
-  return [...perDataDecrescente(match)].reverse()
+  return [...match].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0))
 }
 
 function dalSeed(): Registro {
@@ -202,8 +229,13 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
         // Il workbook comanda, ma se nel browser erano rimaste partite che li'
         // non ci sono (inserite senza server, o con l'Excel aperto) non si
         // buttano via in silenzio: si segnalano e si recuperano con un clic.
-        const nelFoglio = new Set(match.map(impronta))
-        const soloNelBrowser = get().match.filter((m) => !nelFoglio.has(impronta(m)))
+        //
+        // L'elenco si accumula invece di essere ricalcolato da zero: questa
+        // funzione gira piu' volte (React in sviluppo la richiama, e la
+        // richiama il pulsante "Rileggi dal workbook"), e dal secondo giro il
+        // registro in memoria e' gia' quello del foglio — ricalcolando si
+        // perderebbe proprio l'elenco che serve a non perdere le partite.
+        const soloNelBrowser = nonPresentiIn([...get().soloNelBrowser, ...get().match], match)
         const registro = { match, extra: get().extra }
         salvaLocale(registro)
         set({ ...registro, modo: 'excel', excel: stato, caricamento: false, soloNelBrowser })
@@ -229,8 +261,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
     recuperaSoloNelBrowser: async () => {
       const { soloNelBrowser, match } = get()
       if (soloNelBrowser.length === 0) return
-      const nelFoglio = new Set(match.map(impronta))
-      const daAggiungere = soloNelBrowser.filter((m) => !nelFoglio.has(impronta(m)))
+      const daAggiungere = nonPresentiIn(soloNelBrowser, match)
       set({ soloNelBrowser: [] })
       if (daAggiungere.length === 0) return
       const prossimo = { match: perDataDecrescente([...daAggiungere, ...match]), extra: get().extra }
