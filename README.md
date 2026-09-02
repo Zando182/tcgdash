@@ -13,6 +13,9 @@ per ora un segnaposto.
 
 ## Avvio
 
+> **Prima volta su questo computer?** C'e' una guida passo passo, divisa fra Mac e Windows, che
+> parte da zero: **[INSTALLAZIONE.md](INSTALLAZIONE.md)**. Quella che segue e' la versione corta.
+
 Serve [Node.js](https://nodejs.org) 20 o superiore e, per scrivere sull'Excel, Python 3 con
 `openpyxl`. Una volta sola:
 
