@@ -12,9 +12,14 @@ import { createServer } from 'node:http'
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import { extname, join, normalize, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
+import { creaApiExcel } from './api.mjs'
 
-const ROOT = resolve(import.meta.dirname, '..', 'dist')
+const PROGETTO = resolve(import.meta.dirname, '..')
+const ROOT = resolve(PROGETTO, 'dist')
 const PORTA = Number(process.argv[2]) || 5190
+
+// L'API che usa il workbook Excel come database dei match.
+const apiExcel = creaApiExcel({ root: PROGETTO })
 
 const TIPI = {
   '.html': 'text/html; charset=utf-8',
@@ -34,7 +39,10 @@ if (!existsSync(ROOT)) {
   process.exit(1)
 }
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
+  // Prima l'API: se la richiesta e' sua, il file statico non c'entra.
+  if (await apiExcel(req, res)) return
+
   const url = decodeURIComponent((req.url ?? '/').split('?')[0])
   // normalize + prefisso: impedisce di uscire da dist/ con ../
   const richiesto = normalize(join(ROOT, url === '/' ? 'index.html' : url))
@@ -60,6 +68,7 @@ server.on('error', (e) => {
 server.listen(PORTA, '127.0.0.1', () => {
   const indirizzo = `http://localhost:${PORTA}`
   console.log(`TCGDash su ${indirizzo}  (Ctrl+C per chiudere)`)
+  console.log('I match inseriti vengono scritti su data/TCG_Match.xlsx.')
   // Apre il browser di sistema, su Windows, macOS e Linux.
   const [cmd, args] =
     process.platform === 'win32'

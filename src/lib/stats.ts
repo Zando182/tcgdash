@@ -222,6 +222,29 @@ export function raggruppa(match: Match[], dim: Dimensione): Gruppo[] {
   return gruppi.sort((a, b) => b.partite - a.partite || perNome(a.chiave, b.chiave))
 }
 
+/**
+ * Un riepilogo per ogni valore della dimensione, con lo split 1°/2°.
+ *
+ * E' la tabella che nel workbook stava nel foglio Dashboard ("Confronto tra
+ * Deck"): le barre da sole non mostrano il winrate da primo e da secondo,
+ * che e' il numero che dice se un mazzo regge quando non inizia.
+ */
+export type Confronto = Riepilogo & { chiave: string }
+
+export function confronta(match: Match[], dim: Dimensione): Confronto[] {
+  const per = new Map<string, Match[]>()
+  for (const m of match) {
+    for (const v of valoriDi(m, dim)) {
+      const arr = per.get(v)
+      if (arr) arr.push(m)
+      else per.set(v, [m])
+    }
+  }
+  return [...per.entries()]
+    .map(([chiave, suoi]) => ({ chiave, ...riepiloga(suoi) }))
+    .sort((a, b) => b.partite - a.partite || perNome(a.chiave, b.chiave))
+}
+
 // --------------------------------------------------------------- andamento
 
 export type PuntoSettimana = {

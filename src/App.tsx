@@ -27,9 +27,16 @@ const PAGINE: { id: Pagina; etichetta: string; icona: string }[] = [
 const CON_FILTRI: Pagina[] = ['panoramica', 'andamento', 'matchup', 'note']
 
 export default function App() {
-  const { match, salvataggioAttivo } = useRegistro()
+  const { match, salvataggioAttivo, modo, erroreExcel, riprovaSalvataggio, inizializza } =
+    useRegistro()
   const { filtri } = useFiltri()
   const [pagina, setPagina] = useState<Pagina>(leggiHash())
+
+  // All'avvio si chiede al server locale se il workbook Excel e' raggiungibile:
+  // se lo e', diventa lui il database e il registro viene riletto da li'.
+  useEffect(() => {
+    void inizializza()
+  }, [inizializza])
 
   // L'hash tiene la pagina nell'URL: ricaricando si resta dov'eri, e i tasti
   // avanti/indietro del browser funzionano.
@@ -81,11 +88,38 @@ export default function App() {
             <span className="font-semibold text-ink-100">
               WR <span className={r.winrate !== null && r.winrate >= 0.5 ? 'text-win' : 'text-loss'}>{pct(r.winrate)}</span>
             </span>
+            <button
+              type="button"
+              onClick={() => vai('dati')}
+              title={
+                modo === 'excel'
+                  ? "I match vengono scritti su data/TCG_Match.xlsx"
+                  : 'I match restano nel browser di questo PC'
+              }
+              className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                modo === 'excel'
+                  ? 'border-win/50 bg-win/10 text-win'
+                  : 'border-ink-700 bg-ink-850 text-ink-400'
+              }`}
+            >
+              {modo === 'excel' ? 'Excel' : 'browser'}
+            </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-3 px-4 py-4">
+        {erroreExcel && (
+          <div className="card border-loss/50 bg-loss/10 px-3 py-2 text-sm text-rose-100">
+            <strong>Non sono riuscito a scrivere sull'Excel.</strong> Il match e' salvato nel
+            browser, quindi non l'hai perso, ma il workbook non e' aggiornato.
+            <div className="mt-1 text-[13px] text-rose-200/80">{erroreExcel}</div>
+            <button type="button" className="btn mt-2 text-xs" onClick={() => void riprovaSalvataggio()}>
+              Riprova
+            </button>
+          </div>
+        )}
+
         {!salvataggioAttivo && pagina !== 'dati' && (
           <div className="card border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
             Salvataggio locale bloccato dal browser: i match inseriti non resteranno alla ricarica.
@@ -104,8 +138,11 @@ export default function App() {
       </main>
 
       <footer className="mx-auto max-w-[1600px] px-4 pb-6 text-[11px] text-ink-600">
-        TCGDash — registro locale, nessun account e nessun server: i dati restano nel browser di
-        questo PC. Backup dalla pagina Dati.
+        TCGDash —{' '}
+        {modo === 'excel'
+          ? 'i match sono scritti su data/TCG_Match.xlsx, che resta il database.'
+          : 'registro nel browser di questo PC. Avvia con npm start per scrivere sull’Excel.'}{' '}
+        Backup dalla pagina Dati.
       </footer>
     </div>
   )

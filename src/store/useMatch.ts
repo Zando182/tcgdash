@@ -1,11 +1,22 @@
 import { create } from 'zustand'
 import seed from '../data/seed.json'
+import { impronta, leggiDaExcel, scriviSuExcel, statoExcel, type StatoExcel } from '../lib/api'
 import { normalizza, perNome } from '../lib/format'
 import { storageDisponibile } from '../lib/storage'
 import type { Liste, Match, Seed, Turno } from '../types'
 
 const CHIAVE = 'tcgdash:registro:v1'
 const SEED = seed as unknown as Seed
+
+/**
+ * Dove vivono i match.
+ *
+ * `excel`   — il workbook data/TCG_Match.xlsx e' il database: si legge da li'
+ *             all'avvio e ogni modifica ci viene riscritta dal server locale.
+ * `browser` — nessun server (dashboard pubblicata, o Python assente): i match
+ *             stanno in localStorage, come prima.
+ */
+export type Modo = 'excel' | 'browser'
 
 export type Registro = {
   match: Match[]
@@ -14,16 +25,31 @@ export type Registro = {
 }
 
 export type StatoRegistro = Registro & {
+  modo: Modo
+  excel: StatoExcel | null
+  /** true mentre si legge il workbook all'avvio. */
+  caricamento: boolean
   /** false quando il browser blocca localStorage: si avvisa in testa alla pagina. */
   salvataggioAttivo: boolean
+  /** Popolato quando una scrittura sull'Excel fallisce: il match resta nel browser. */
+  erroreExcel: string | null
+  ultimoSalvataggio: string | null
+  /** Match presenti solo nel browser e non nel workbook, da recuperare a mano. */
+  soloNelBrowser: Match[]
+
+  inizializza: () => Promise<void>
+  ricaricaDaExcel: () => Promise<void>
+  /** Riprova la scrittura fallita, senza toccare il registro. */
+  riprovaSalvataggio: () => Promise<void>
+  /** Manda nel workbook i match rimasti solo nel browser. */
+  recuperaSoloNelBrowser: () => Promise<void>
+
   aggiungi: (m: Omit<Match, 'id'>) => void
   modifica: (id: string, m: Omit<Match, 'id'>) => void
   elimina: (id: string) => void
   duplica: (id: string) => void
   aggiungiValore: (campo: keyof Liste, valore: string) => void
-  /** Sostituisce tutto il registro (import da file). */
   sostituisci: (r: Registro) => void
-  /** Torna al registro generato dall'Excel, perdendo le modifiche locali. */
   ripristinaSeed: () => void
 }
 
@@ -67,6 +93,16 @@ function perDataDecrescente(match: Match[]): Match[] {
   return [...match].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0))
 }
 
+/**
+ * L'ordine in cui il registro viene mandato al workbook: dal piu' vecchio, che
+ * e' l'ordine delle righe del foglio. Invertire quello mostrato a schermo
+ * mantiene, fra partite dello stesso giorno, la sequenza in cui sono state
+ * giocate.
+ */
+function perFoglio(match: Match[]): Match[] {
+  return [...perDataDecrescente(match)].reverse()
+}
+
 function dalSeed(): Registro {
   return {
     match: perDataDecrescente(
@@ -92,7 +128,7 @@ function registroIniziale(): Registro {
   return dalSeed()
 }
 
-function salva(r: Registro): void {
+function salvaLocale(r: Registro): void {
   try {
     localStorage.setItem(CHIAVE, JSON.stringify(r))
   } catch {
@@ -101,16 +137,107 @@ function salva(r: Registro): void {
 }
 
 export const useRegistro = create<StatoRegistro>((set, get) => {
+  // Una scrittura per volta: se ne arrivano altre mentre la prima e' in corso
+  // (si inseriscono due match di fila), si manda solo l'ultimo registro, che
+  // le contiene tutte.
+  let inVolo = false
+  let inCoda: Match[] | null = null
+
+  async function versoExcel(match: Match[]): Promise<void> {
+    if (get().modo !== 'excel') return
+    if (inVolo) {
+      inCoda = match
+      return
+    }
+    inVolo = true
+    try {
+      const esito = await scriviSuExcel(perFoglio(match))
+      set({
+        erroreExcel: null,
+        ultimoSalvataggio: new Date().toISOString(),
+        excel: { ...(get().excel ?? { disponibile: true }), match: esito.scritti, bloccato: false },
+      })
+    } catch (e) {
+      set({ erroreExcel: e instanceof Error ? e.message : String(e) })
+    } finally {
+      inVolo = false
+      const prossimo = inCoda
+      inCoda = null
+      if (prossimo) await versoExcel(prossimo)
+    }
+  }
+
+  /** Aggiorna il registro, lo specchia in localStorage e lo manda all'Excel. */
   const scrivi = (aggiorna: (r: Registro) => Registro) => {
     const aggiornato = aggiorna({ match: get().match, extra: get().extra })
     const prossimo = { ...aggiornato, match: perDataDecrescente(aggiornato.match) }
-    salva(prossimo)
+    // localStorage resta come copia anche in modalita' Excel: se la scrittura
+    // sul workbook fallisce (file aperto in Excel), il match non e' perso.
+    salvaLocale(prossimo)
     set(prossimo)
+    void versoExcel(prossimo.match)
   }
 
   return {
     ...registroIniziale(),
+    modo: 'browser',
+    excel: null,
+    caricamento: true,
     salvataggioAttivo: storageDisponibile(),
+    erroreExcel: null,
+    ultimoSalvataggio: null,
+    soloNelBrowser: [],
+
+    inizializza: async () => {
+      const stato = await statoExcel()
+      if (!stato?.disponibile) {
+        set({ modo: 'browser', excel: stato, caricamento: false })
+        return
+      }
+      try {
+        const dal = await leggiDaExcel()
+        const match = perDataDecrescente(
+          dal.match.map((m, i) => sanifica(m, i)).filter((m): m is Match => m !== null),
+        )
+        // Il workbook comanda, ma se nel browser erano rimaste partite che li'
+        // non ci sono (inserite senza server, o con l'Excel aperto) non si
+        // buttano via in silenzio: si segnalano e si recuperano con un clic.
+        const nelFoglio = new Set(match.map(impronta))
+        const soloNelBrowser = get().match.filter((m) => !nelFoglio.has(impronta(m)))
+        const registro = { match, extra: get().extra }
+        salvaLocale(registro)
+        set({ ...registro, modo: 'excel', excel: stato, caricamento: false, soloNelBrowser })
+      } catch (e) {
+        set({
+          modo: 'browser',
+          excel: { ...stato, disponibile: false, errore: e instanceof Error ? e.message : String(e) },
+          caricamento: false,
+        })
+      }
+    },
+
+    ricaricaDaExcel: async () => {
+      set({ caricamento: true })
+      await get().inizializza()
+    },
+
+    riprovaSalvataggio: async () => {
+      set({ erroreExcel: null })
+      await versoExcel(get().match)
+    },
+
+    recuperaSoloNelBrowser: async () => {
+      const { soloNelBrowser, match } = get()
+      if (soloNelBrowser.length === 0) return
+      const nelFoglio = new Set(match.map(impronta))
+      const daAggiungere = soloNelBrowser.filter((m) => !nelFoglio.has(impronta(m)))
+      set({ soloNelBrowser: [] })
+      if (daAggiungere.length === 0) return
+      const prossimo = { match: perDataDecrescente([...daAggiungere, ...match]), extra: get().extra }
+      salvaLocale(prossimo)
+      set(prossimo)
+      await versoExcel(prossimo.match)
+    },
 
     aggiungi: (m) => scrivi((r) => ({ ...r, match: [{ ...m, id: nuovoId() }, ...r.match] })),
 
@@ -143,9 +270,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       } catch {
         // Niente storage: si riparte comunque dal seed in memoria.
       }
-      const r = dalSeed()
-      salva(r)
-      set(r)
+      scrivi(() => dalSeed())
     },
   }
 })

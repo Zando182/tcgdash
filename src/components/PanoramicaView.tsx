@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { dataIt, pct } from '../lib/format'
-import { andamentoSettimanale, raggruppa, riepiloga, settimaneComplete } from '../lib/stats'
+import { andamentoSettimanale, confronta, raggruppa, riepiloga, settimaneComplete } from '../lib/stats'
 import { useFiltri } from '../store/useFiltri'
 import type { Match } from '../types'
 import { BarreWinrate, Ciambella, GraficoAndamento, GraficoVolume } from './charts'
-import { Section, Stat, Vuoto } from './ui'
+import { Section, Stat, Vuoto, Winrate } from './ui'
 
 /**
  * Prima pagina: come sto andando, con che mazzi e contro chi.
@@ -24,6 +24,7 @@ export function PanoramicaView({ match }: { match: Match[] }) {
   const perDeck = useMemo(() => raggruppa(match, 'deck'), [match])
   const perAvversario = useMemo(() => raggruppa(match, 'avversario'), [match])
   const perTag = useMemo(() => raggruppa(match, 'tag'), [match])
+  const confrontoDeck = useMemo(() => confronta(match, 'deck'), [match])
 
   if (match.length === 0) {
     return <Vuoto testo="Nessun match con questi filtri: allarga la selezione o inseriscine uno nuovo." />
@@ -115,6 +116,54 @@ export function PanoramicaView({ match }: { match: Match[] }) {
           </div>
         </Section>
       </div>
+
+      <Section
+        title="Confronto tra mazzi"
+        hint="Lo stesso quadro che nel workbook stava nel foglio Dashboard, filtri compresi. Clicca una riga per restringere tutta la dashboard a quel mazzo."
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="text-[11px] tracking-wide text-ink-400 uppercase">
+              <tr className="border-b border-ink-700/70">
+                <th className="px-3 py-2 text-left font-medium">Mazzo</th>
+                <th className="px-2 py-2 text-right font-medium">Partite</th>
+                <th className="px-2 py-2 text-right font-medium">V</th>
+                <th className="px-2 py-2 text-right font-medium">S</th>
+                <th className="px-2 py-2 text-right font-medium">Winrate</th>
+                <th className="px-2 py-2 text-right font-medium">Da 1°</th>
+                <th className="px-3 py-2 text-right font-medium">Da 2°</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-700/40">
+              {confrontoDeck.map((d) => (
+                <tr
+                  key={d.chiave}
+                  onClick={() => soloQuesto('deck', d.chiave)}
+                  className={`cursor-pointer hover:bg-ink-850 ${
+                    filtri.deck.includes(d.chiave) ? 'bg-sky-500/10' : ''
+                  }`}
+                >
+                  <td className="px-3 py-1.5 text-ink-100">{d.chiave}</td>
+                  <td className="px-2 py-1.5 text-right text-ink-300">{d.partite}</td>
+                  <td className="px-2 py-1.5 text-right text-win">{d.vittorie}</td>
+                  <td className="px-2 py-1.5 text-right text-loss">{d.sconfitte}</td>
+                  <td className="px-2 py-1.5 text-right">
+                    <Winrate wr={d.winrate} partite={d.partite} />
+                  </td>
+                  <td className="px-2 py-1.5 text-right whitespace-nowrap">
+                    <Winrate wr={d.primo.winrate} partite={d.primo.partite} />
+                    <span className="ml-1 text-[10px] text-ink-400">({d.primo.partite})</span>
+                  </td>
+                  <td className="px-3 py-1.5 text-right whitespace-nowrap">
+                    <Winrate wr={d.secondo.winrate} partite={d.secondo.partite} />
+                    <span className="ml-1 text-[10px] text-ink-400">({d.secondo.partite})</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
 
       <div className="grid gap-3 lg:grid-cols-2">
         <Section

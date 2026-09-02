@@ -11,7 +11,9 @@
     "typecheck": "tsc -b --noEmit",
     "ingest": "python scripts/ingest_xlsx.py",
     "serve": "node scripts/serve.mjs",
-    "start": "npm run build && node scripts/serve.mjs"
+    "start": "npm run build && node scripts/serve.mjs",
+    "db": "python scripts/excel_db.py stato",
+    "db:pulisci": "python scripts/excel_db.py pulisci"
   },
   "dependencies": {
     "react": "^19.1.0",

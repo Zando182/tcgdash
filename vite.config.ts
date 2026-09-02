@@ -4,6 +4,8 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
+// @ts-expect-error - modulo .mjs senza tipi, condiviso col server di npm start
+import { creaApiExcel } from './scripts/api.mjs'
 
 const ROOT = import.meta.dirname
 const DATA_DIR = resolve(ROOT, 'data')
@@ -87,8 +89,27 @@ function autoIngest(): Plugin {
   }
 }
 
+/**
+ * Monta in sviluppo la stessa API del server di `npm start`, cosi' anche con
+ * `npm run dev` i match finiscono nel workbook invece che solo nel browser.
+ */
+function apiExcel(): Plugin {
+  return {
+    name: 'tcgdash-api-excel',
+    apply: 'serve',
+    configureServer(server) {
+      const gestisci = creaApiExcel({ root: ROOT })
+      server.middlewares.use((req, res, next) => {
+        gestisci(req, res).then((gestita: boolean) => {
+          if (!gestita) next()
+        }, next)
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), autoIngest()],
+  plugins: [react(), tailwindcss(), autoIngest(), apiExcel()],
   // Percorsi relativi: dist/ funziona anche aperta da file://, quindi si copia
   // su qualunque PC e si apre index.html senza installare nulla.
   base: './',
