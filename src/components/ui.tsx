@@ -72,8 +72,10 @@ export function Section({
 }) {
   return (
     <section className={`card overflow-hidden ${className}`}>
-      <header className="flex items-start justify-between gap-3 border-b border-ink-700/70 px-3 py-2">
-        <div>
+      {/* Su schermo stretto il contenuto di `right` (campi, selettori) va a capo
+          sotto il titolo invece di schiacciarlo. */}
+      <header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 border-b border-ink-700/70 px-3 py-2">
+        <div className="min-w-48 flex-1">
           <h2 className="text-xs font-semibold tracking-wide text-ink-300 uppercase">{title}</h2>
           {hint && <p className="mt-0.5 text-[11px] text-ink-400">{hint}</p>}
         </div>

@@ -158,9 +158,9 @@ export function NoteView({ match }: { match: Match[] }) {
         title="Playbook"
         hint="Ogni nota che hai scritto nei match, raccolta per matchup. Cerca una carta o una linea per ritrovare subito cosa avevi imparato."
         right={
-          <div className="flex flex-wrap items-center justify-end gap-1.5">
+          <div className="flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto">
             <input
-              className="field w-56 py-1 text-xs"
+              className="field min-w-40 flex-1 py-1 text-xs sm:w-56 sm:flex-none"
               placeholder="cerca nelle note..."
               value={filtri.cerca}
               onChange={(e) => imposta('cerca', e.target.value)}
