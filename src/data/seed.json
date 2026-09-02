@@ -1,0 +1,1733 @@
+{
+ "generatoDa": "TCG_Match.xlsx",
+ "generatoIl": "2026-09-02",
+ "liste": {
+  "deck": [
+   "Area Della Festa",
+   "Dragapult ex",
+   "Dragapult ex Blaziken ex",
+   "Grimmsnarl ex Froslass",
+   "Ragingbolt ex Ogerpon ex"
+  ],
+  "decklist": [
+   "Bolt v1",
+   "Dragapolli v1",
+   "Dragapolli v2",
+   "Dragapolli v3",
+   "Dragapult v1",
+   "Dragapult v2",
+   "Grimmsnarl v1",
+   "Mele v1"
+  ],
+  "formato": [
+   "TEF-PBL"
+  ],
+  "avversario": [
+   "Alakazam Dudunsparce",
+   "Archaludon ex",
+   "Area Della Festa",
+   "Bronzong Dusknoir",
+   "Clafairy ex",
+   "Dhelmise Banette",
+   "Doublade",
+   "Dragapult ex",
+   "Dragapult ex Blaziken ex",
+   "Dragapult ex Dusknoir",
+   "Garchomp ex",
+   "Grimmsnarl ex Froslass",
+   "Honchkrow Porygon2",
+   "Hydraigon ex",
+   "Hydrapple ex Ogerpon ex",
+   "MegaChandelure ex",
+   "MegaCharizard ex Oricorio",
+   "MegaDarkrai ex",
+   "MegaExcadrill ex",
+   "MegaFroslass ex Chandelure",
+   "MegaGreninja ex Blaziken",
+   "MegaKangaskhan ex Bouffalant",
+   "MegaLopunny ex",
+   "MegaLucario ex",
+   "MegaStarmie ex Dragapult",
+   "MegaStarmie ex Dusknoir",
+   "Metagross ex",
+   "Mewtwo ex Spidops",
+   "Raging Bolt",
+   "Slowking",
+   "Spineferree ex Bastiodon",
+   "Toucannon Dusknoir",
+   "Toxtricity box",
+   "Typhlosion",
+   "Vileplume ex Ogerpon",
+   "Zoroark ex"
+  ],
+  "torneo": [
+   "Friendly",
+   "TCGLive"
+  ],
+  "tag": [
+   "Bad Draw",
+   "Bad Luck",
+   "Bad Opening",
+   "Bad Start",
+   "Easy Matchup",
+   "Good Opening",
+   "Good Start",
+   "Lucky Win",
+   "Unlucky"
+  ]
+ },
+ "match": [
+  {
+   "id": "xlsx-001",
+   "data": "2026-08-01",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Vileplume ex Ogerpon",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening",
+    "Lucky Win"
+   ],
+   "torneo": "TCGLive",
+   "note": "Doppio Frosslass, può essere molto fastidioso se fa doppio Vileplume che cura 60 da tutti"
+  },
+  {
+   "id": "xlsx-002",
+   "data": "2026-08-01",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-003",
+   "data": "2026-08-01",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaStarmie ex Dusknoir",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Bad Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-004",
+   "data": "2026-08-01",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaCharizard ex Oricorio",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Easy Matchup"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-005",
+   "data": "2026-08-01",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Opening",
+    "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-006",
+   "data": "2026-08-02",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Zoroark ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Doppio Froslass, devi sperare non faccia darmanitan e vinci"
+  },
+  {
+   "id": "xlsx-007",
+   "data": "2026-08-02",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-008",
+   "data": "2026-08-02",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Unlucky"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-009",
+   "data": "2026-08-02",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": "Doppio froslass puoi ignorare mega excadrill"
+  },
+  {
+   "id": "xlsx-010",
+   "data": "2026-08-02",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Spineferree ex Bastiodon",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": "Carica preventivamente Grimm"
+  },
+  {
+   "id": "xlsx-011",
+   "data": "2026-08-03",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Area Della Festa",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Doppio froslass tieni 1 premio di board"
+  },
+  {
+   "id": "xlsx-012",
+   "data": "2026-08-03",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-013",
+   "data": "2026-08-03",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": "Non mettere mai budew soprattutto se si è già settato, forse da secondo si"
+  },
+  {
+   "id": "xlsx-014",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Toucannon Dusknoir",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Servono 13 pokemon per fare 320, attento quindi ai froslass"
+  },
+  {
+   "id": "xlsx-015",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-016",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaStarmie ex Dragapult",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-017",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-018",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Honchkrow Porygon2",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-019",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Honchkrow Porygon2",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-020",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dhelmise Banette",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-021",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaFroslass ex Chandelure",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-022",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-023",
+   "data": "2026-08-04",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaLucario ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-024",
+   "data": "2026-08-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-025",
+   "data": "2026-08-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-026",
+   "data": "2026-08-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Area Della Festa",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-027",
+   "data": "2026-08-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Typhlosion",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Con 3 ethan victini e brave bangle ti uccidono 320"
+  },
+  {
+   "id": "xlsx-028",
+   "data": "2026-08-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Area Della Festa",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Luck"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-029",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaLucario ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-030",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-031",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaGreninja ex Blaziken",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-032",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Zoroark ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-033",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dhelmise Banette",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Puoi non mettere frosslass, doppio grimm il resto munki"
+  },
+  {
+   "id": "xlsx-034",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex Dusknoir",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-035",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaChandelure ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Doppio frosslass e giocato di budew munkidori, anche trappare funziona"
+  },
+  {
+   "id": "xlsx-036",
+   "data": "2026-08-06",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Mewtwo ex Spidops",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-037",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Attento che ha stamp"
+  },
+  {
+   "id": "xlsx-038",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Lucky Win"
+   ],
+   "torneo": "TCGLive",
+   "note": "Tieni budew per le play finali quando non può ritirare"
+  },
+  {
+   "id": "xlsx-039",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaStarmie ex Dusknoir",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Molto bene budew all'inizio e yveltal"
+  },
+  {
+   "id": "xlsx-040",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-041",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Hydrapple ex Ogerpon ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-045",
+   "data": "2026-08-11",
+   "formato": "TEF-PBL",
+   "deck": "Grimmsnarl ex Froslass",
+   "decklist": "Grimmsnarl v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-042",
+   "data": "2026-08-12",
+   "formato": "TEF-PBL",
+   "deck": "Area Della Festa",
+   "decklist": "Mele v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-043",
+   "data": "2026-08-12",
+   "formato": "TEF-PBL",
+   "deck": "Area Della Festa",
+   "decklist": "Mele v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-044",
+   "data": "2026-08-12",
+   "formato": "TEF-PBL",
+   "deck": "Area Della Festa",
+   "decklist": "Mele v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-046",
+   "data": "2026-08-17",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Zoroark ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-047",
+   "data": "2026-08-17",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-048",
+   "data": "2026-08-17",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-049",
+   "data": "2026-08-17",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Honchkrow Porygon2",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-050",
+   "data": "2026-08-18",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaDarkrai ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-051",
+   "data": "2026-08-18",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-052",
+   "data": "2026-08-18",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Good Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": "Martello sui munkidori, altrimenti punisci se fa doppio grimm"
+  },
+  {
+   "id": "xlsx-053",
+   "data": "2026-08-18",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Non è male privarlo degli altri loak se riesci a fare doppio ko"
+  },
+  {
+   "id": "xlsx-054",
+   "data": "2026-08-18",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Archaludon ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-055",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": "Ricordati di ritirare manualmente per kanga per pescare, attento a yveltal"
+  },
+  {
+   "id": "xlsx-056",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-057",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-058",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-059",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-060",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-061",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "Friendly",
+   "note": ""
+  },
+  {
+   "id": "xlsx-062",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Hydraigon ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-063",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Doublade",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": "Prioritizza ogerpon"
+  },
+  {
+   "id": "xlsx-064",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": "Potevi mettere un kanga pulito alla fine sperando non avesse boss"
+  },
+  {
+   "id": "xlsx-065",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Ragingbolt ex Ogerpon ex",
+   "decklist": "Bolt v1",
+   "avversario": "Dhelmise Banette",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Giocata di mega kanga"
+  },
+  {
+   "id": "xlsx-066",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Toxtricity box",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Attento a non lasciare troppi danni in giro"
+  },
+  {
+   "id": "xlsx-067",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Toxtricity box",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-068",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-069",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Raging Bolt",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Luck"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-070",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-071",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v2",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-072",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v2",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-073",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v2",
+   "avversario": "Hydrapple ex Ogerpon ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-084",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Area Della Festa",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-085",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dhelmise Banette",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-086",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Typhlosion",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Importanti le stadio + timbro + cartellino"
+  },
+  {
+   "id": "xlsx-087",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Da controllare di avere sempre le energie negli scarti, sia tue che sue, ho vinto per quello, boss su blaziken!"
+  },
+  {
+   "id": "xlsx-088",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-092",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-110",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Good Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-112",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-113",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Hydrapple ex Ogerpon ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-114",
+   "data": "2026-08-20",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "MegaKangaskhan ex Bouffalant",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-074",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Raging Bolt",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-075",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-076",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-077",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dhelmise Banette",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-078",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Toucannon Dusknoir",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-089",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-090",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Clafairy ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Soffre timbro senza prendere ko"
+  },
+  {
+   "id": "xlsx-091",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-093",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Raging Bolt",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-094",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-095",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "MegaLopunny ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Ottima la torre dopo lo stamp, attento a lino"
+  },
+  {
+   "id": "xlsx-115",
+   "data": "2026-08-22",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "",
+   "note": "Valuta attaccare di munkidori se non riesci di pult"
+  },
+  {
+   "id": "xlsx-079",
+   "data": "2026-08-23",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-080",
+   "data": "2026-08-23",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Area Della Festa",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-081",
+   "data": "2026-08-23",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-082",
+   "data": "2026-08-23",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-083",
+   "data": "2026-08-23",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-096",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Dhelmise Banette",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Ti basta un turno dove fai doppio ko di rovine"
+  },
+  {
+   "id": "xlsx-097",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "MegaExcadrill ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-098",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-099",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-100",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Zoroark ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Devi provare il doppio zoroark ko"
+  },
+  {
+   "id": "xlsx-101",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-102",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-103",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Metagross ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-109",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-116",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Garchomp ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-117",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Hydrapple ex Ogerpon ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-118",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "MegaChandelure ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-119",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-120",
+   "data": "2026-08-26",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaChandelure ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-104",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Dhelmise Banette",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-105",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "MegaLopunny ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-106",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-107",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Bronzong Dusknoir",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": "Parti primo"
+  },
+  {
+   "id": "xlsx-108",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v2",
+   "avversario": "Grimmsnarl ex Froslass",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-111",
+   "data": "2026-08-27",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Blaziken ex",
+   "decklist": "Dragapolli v3",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Good Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  }
+ ]
+}
