@@ -17,6 +17,9 @@ Serve [Node.js](https://nodejs.org) 20 o superiore e, per scrivere sull'Excel, P
 npm install && pip install openpyxl
 ```
 
+Il comando Python giusto cambia da macchina a macchina (`python3`, `python`, `py`): non serve
+saperlo, gli script lo cercano da soli.
+
 Poi, ogni volta:
 
 ```bash
