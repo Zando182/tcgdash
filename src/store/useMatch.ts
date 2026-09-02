@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import seed from '../data/seed.json'
 import { impronta, leggiDaExcel, scriviSuExcel, statoExcel, type StatoExcel } from '../lib/api'
-import { normalizza, perNome } from '../lib/format'
+import { normalizza, oggiIso, perNome } from '../lib/format'
 import { storageDisponibile } from '../lib/storage'
-import type { Liste, Match, Seed, Turno } from '../types'
+import type { Lista, Liste, Match, Seed, Turno } from '../types'
 
 const CHIAVE = 'tcgdash:registro:v1'
 const SEED = seed as unknown as Seed
@@ -20,6 +20,8 @@ export type Modo = 'excel' | 'browser'
 
 export type Registro = {
   match: Match[]
+  /** Le liste salvate, testo grezzo incollato dalla pagina Liste. */
+  decklist: Lista[]
   /** Valori aggiunti a mano che non compaiono (ancora) in nessun match. */
   extra: Partial<Liste>
 }
@@ -51,10 +53,18 @@ export type StatoRegistro = Registro & {
   aggiungiValore: (campo: keyof Liste, valore: string) => void
   sostituisci: (r: Registro) => void
   ripristinaSeed: () => void
+
+  /** Salva una lista nuova, o ne aggiorna una esistente se l'id combacia. */
+  salvaLista: (lista: Omit<Lista, 'id' | 'aggiornata'> & { id?: string }) => void
+  eliminaLista: (id: string) => void
 }
 
 function nuovoId(): string {
   return `m-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function nuovoIdLista(): string {
+  return `l-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Ripulisce un match letto da JSON: il file potrebbe venire da una versione vecchia. */
@@ -78,14 +88,39 @@ function sanifica(m: Partial<Match> & Record<string, unknown>, i: number): Match
   }
 }
 
+/** Ripulisce una lista letta da JSON o dall'Excel, senza toccarne il testo. */
+function sanificaLista(l: Partial<Lista> & Record<string, unknown>, i: number): Lista | null {
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+  const nome = str(l.nome)
+  // Il testo si tiene com'e': e' il punto della pagina Liste.
+  const corpo = typeof l.testo === 'string' ? l.testo.replace(/\r\n/g, '\n') : ''
+  if (!nome && !corpo.trim()) return null
+  return {
+    id: str(l.id) || `lista-${i}`,
+    nome,
+    mazzo: str(l.mazzo),
+    aggiornata: str(l.aggiornata),
+    testo: corpo,
+  }
+}
+
 export function leggiRegistro(testo: string): Registro {
-  const dati = JSON.parse(testo) as { match?: unknown[]; extra?: Partial<Liste> }
+  const dati = JSON.parse(testo) as {
+    match?: unknown[]
+    decklist?: unknown[]
+    extra?: Partial<Liste>
+  }
   if (!Array.isArray(dati.match)) throw new Error('File non valido: manca l’elenco "match".')
   const match = dati.match
     .map((m, i) => sanifica(m as Partial<Match>, i))
     .filter((m): m is Match => m !== null)
   if (match.length === 0) throw new Error('Il file non contiene nessun match valido.')
-  return { match, extra: dati.extra ?? {} }
+  const decklist = Array.isArray(dati.decklist)
+    ? dati.decklist
+        .map((l, i) => sanificaLista(l as Partial<Lista>, i))
+        .filter((l): l is Lista => l !== null)
+    : []
+  return { match, decklist, extra: dati.extra ?? {} }
 }
 
 /**
@@ -135,6 +170,9 @@ function dalSeed(): Registro {
     match: perDataDecrescente(
       SEED.match.map((m, i) => sanifica(m, i)).filter((m): m is Match => m !== null),
     ),
+    decklist: (SEED.decklist ?? [])
+      .map((l, i) => sanificaLista(l, i))
+      .filter((l): l is Lista => l !== null),
     extra: {},
   }
 }
@@ -168,17 +206,17 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
   // (si inseriscono due match di fila), si manda solo l'ultimo registro, che
   // le contiene tutte.
   let inVolo = false
-  let inCoda: Match[] | null = null
+  let inCoda: { match: Match[]; decklist: Lista[] } | null = null
 
-  async function versoExcel(match: Match[]): Promise<void> {
+  async function versoExcel(match: Match[], decklist: Lista[]): Promise<void> {
     if (get().modo !== 'excel') return
     if (inVolo) {
-      inCoda = match
+      inCoda = { match, decklist }
       return
     }
     inVolo = true
     try {
-      const esito = await scriviSuExcel(perFoglio(match))
+      const esito = await scriviSuExcel(perFoglio(match), decklist)
       set({
         erroreExcel: null,
         ultimoSalvataggio: new Date().toISOString(),
@@ -190,19 +228,23 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       inVolo = false
       const prossimo = inCoda
       inCoda = null
-      if (prossimo) await versoExcel(prossimo)
+      if (prossimo) await versoExcel(prossimo.match, prossimo.decklist)
     }
   }
 
   /** Aggiorna il registro, lo specchia in localStorage e lo manda all'Excel. */
   const scrivi = (aggiorna: (r: Registro) => Registro) => {
-    const aggiornato = aggiorna({ match: get().match, extra: get().extra })
+    const aggiornato = aggiorna({
+      match: get().match,
+      decklist: get().decklist,
+      extra: get().extra,
+    })
     const prossimo = { ...aggiornato, match: perDataDecrescente(aggiornato.match) }
     // localStorage resta come copia anche in modalita' Excel: se la scrittura
-    // sul workbook fallisce (file aperto in Excel), il match non e' perso.
+    // sul workbook fallisce (file aperto in Excel), niente e' perso.
     salvaLocale(prossimo)
     set(prossimo)
-    void versoExcel(prossimo.match)
+    void versoExcel(prossimo.match, prossimo.decklist)
   }
 
   return {
@@ -236,7 +278,10 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
         // registro in memoria e' gia' quello del foglio — ricalcolando si
         // perderebbe proprio l'elenco che serve a non perdere le partite.
         const soloNelBrowser = nonPresentiIn([...get().soloNelBrowser, ...get().match], match)
-        const registro = { match, extra: get().extra }
+        const decklist = dal.decklist
+          .map((l, i) => sanificaLista(l, i))
+          .filter((l): l is Lista => l !== null)
+        const registro = { match, decklist, extra: get().extra }
         salvaLocale(registro)
         set({ ...registro, modo: 'excel', excel: stato, caricamento: false, soloNelBrowser })
       } catch (e) {
@@ -255,7 +300,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
 
     riprovaSalvataggio: async () => {
       set({ erroreExcel: null })
-      await versoExcel(get().match)
+      await versoExcel(get().match, get().decklist)
     },
 
     recuperaSoloNelBrowser: async () => {
@@ -264,10 +309,14 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       const daAggiungere = nonPresentiIn(soloNelBrowser, match)
       set({ soloNelBrowser: [] })
       if (daAggiungere.length === 0) return
-      const prossimo = { match: perDataDecrescente([...daAggiungere, ...match]), extra: get().extra }
+      const prossimo = {
+        match: perDataDecrescente([...daAggiungere, ...match]),
+        decklist: get().decklist,
+        extra: get().extra,
+      }
       salvaLocale(prossimo)
       set(prossimo)
-      await versoExcel(prossimo.match)
+      await versoExcel(prossimo.match, prossimo.decklist)
     },
 
     aggiungi: (m) => scrivi((r) => ({ ...r, match: [{ ...m, id: nuovoId() }, ...r.match] })),
@@ -303,6 +352,32 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       }
       scrivi(() => dalSeed())
     },
+
+    salvaLista: (lista) =>
+      scrivi((r) => {
+        const nome = lista.nome.trim()
+        // Il testo NON si tocca: nessun trim, nessuna normalizzazione oltre ai
+        // ritorni a capo. E' quello che l'utente ha incollato.
+        const testo = lista.testo.replace(/\r\n/g, '\n')
+        if (!nome && !testo.trim()) return r
+        const aggiornata = oggiIso()
+        const esistente = lista.id ? r.decklist.find((l) => l.id === lista.id) : undefined
+        const nuova: Lista = {
+          id: esistente?.id ?? nuovoIdLista(),
+          nome,
+          mazzo: lista.mazzo.trim(),
+          aggiornata,
+          testo,
+        }
+        return {
+          ...r,
+          decklist: esistente
+            ? r.decklist.map((l) => (l.id === esistente.id ? nuova : l))
+            : [nuova, ...r.decklist],
+        }
+      }),
+
+    eliminaLista: (id) => scrivi((r) => ({ ...r, decklist: r.decklist.filter((l) => l.id !== id) })),
   }
 })
 

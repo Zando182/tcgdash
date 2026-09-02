@@ -24,6 +24,7 @@ from pathlib import Path
 
 try:
     import openpyxl
+    from openpyxl.styles import Alignment, Font, PatternFill
 except ImportError:  # pragma: no cover - dipende dall'ambiente
     raise SystemExit("Serve openpyxl:  pip install openpyxl")
 
@@ -36,11 +37,22 @@ NOME_WORKBOOK = "TCG_Match.xlsx"
 
 FOGLIO_DATI = "Match"
 FOGLIO_LISTE = "Liste"
+FOGLIO_DECKLIST = "Decklist"
 
 # Fogli tenuti dal workbook-database. Tutto il resto (Dashboard, Matrice
 # Matchup, le schede per deck, Leggimi) sono elaborazioni che la dashboard
 # rifa' meglio, e vengono eliminate da pulisci().
-FOGLI_DA_TENERE = {FOGLIO_DATI, FOGLIO_LISTE}
+FOGLI_DA_TENERE = {FOGLIO_DATI, FOGLIO_LISTE, FOGLIO_DECKLIST}
+
+# Colonne del foglio Decklist: il testo della lista incollato dal sito.
+# E' un dato come i match, non un'elaborazione, quindi vive nel workbook e
+# finisce nei backup e nella cronologia di git insieme a tutto il resto.
+COLONNE_DECKLIST = {
+    "A": "nome",
+    "B": "mazzo",
+    "C": "aggiornata",
+    "D": "testo",
+}
 
 PRIMA_RIGA = 2
 #
@@ -217,6 +229,7 @@ def leggi(percorso: Path) -> dict:
         return sorted({m[campo] for m in match if m[campo]}, key=normalizza)
 
     return {
+        "decklist": _leggi_decklist(wb),
         "file": percorso.name,
         "intestazioni": intestazioni,
         "scartate": scartate,
@@ -230,6 +243,38 @@ def leggi(percorso: Path) -> dict:
         },
         "match": match,
     }
+
+
+def _leggi_decklist(wb) -> list[dict]:
+    """
+    Le liste salvate, dal foglio Decklist.
+
+    Il testo non viene interpretato in nessun modo: e' quello che l'utente ha
+    incollato, virgole, righe vuote e refusi compresi. Serve a ritrovarlo, non
+    a validarlo.
+    """
+    if FOGLIO_DECKLIST not in wb.sheetnames:
+        return []
+    ws = wb[FOGLIO_DECKLIST]
+    fuori: list[dict] = []
+    for riga in range(PRIMA_RIGA, ws.max_row + 1):
+        val = {campo: ws[f"{col}{riga}"].value for col, campo in COLONNE_DECKLIST.items()}
+        nome = testo(val["nome"])
+        # Il testo si tiene grezzo: solo i ritorni a capo di Windows si
+        # normalizzano, altrimenti tornano indietro raddoppiati.
+        corpo = "" if val["testo"] is None else str(val["testo"]).replace("\r\n", "\n").strip("\n")
+        if not nome and not corpo:
+            continue
+        fuori.append(
+            {
+                "id": f"lista-{len(fuori) + 1:03d}",
+                "nome": nome,
+                "mazzo": testo(val["mazzo"]),
+                "aggiornata": iso_data(val["aggiornata"]) if val["aggiornata"] else "",
+                "testo": corpo,
+            }
+        )
+    return fuori
 
 
 # --------------------------------------------------------------- scrittura
@@ -356,6 +401,51 @@ def _rigenera_liste(wb, dati: dict) -> None:
         dv.formula1 = f"{FOGLIO_LISTE}!${col}${PRIMA_RIGA}:${col}${ultima}"
 
 
+def _scrivi_decklist(wb, liste: list[dict]) -> int:
+    """
+    Riscrive il foglio Decklist. Lo crea se non c'e' ancora.
+
+    Come per i match si riscrive tutto invece di aggiungere in fondo: cosi'
+    salvataggio, modifica ed eliminazione seguono la stessa strada.
+    """
+    if FOGLIO_DECKLIST in wb.sheetnames:
+        ws = wb[FOGLIO_DECKLIST]
+    else:
+        ws = wb.create_sheet(FOGLIO_DECKLIST)
+        for col, campo in COLONNE_DECKLIST.items():
+            c = ws[f"{col}1"]
+            c.value = {"nome": "Nome lista", "mazzo": "Mazzo", "aggiornata": "Aggiornata", "testo": "Lista"}[campo]
+            c.font = Font(bold=True)
+            c.fill = PatternFill("solid", fgColor="F2F2F2")
+        ws.column_dimensions["A"].width = 24
+        ws.column_dimensions["B"].width = 26
+        ws.column_dimensions["C"].width = 13
+        ws.column_dimensions["D"].width = 60
+        ws.freeze_panes = "A2"
+
+    ultima_prima = ws.max_row
+    valide = [l for l in liste if testo(l.get("nome")) or testo(l.get("testo"))]
+
+    for i, lista in enumerate(valide):
+        riga = PRIMA_RIGA + i
+        ws[f"A{riga}"].value = testo(lista.get("nome"))
+        ws[f"B{riga}"].value = testo(lista.get("mazzo"))
+        agg = testo(lista.get("aggiornata"))
+        ws[f"C{riga}"].value = datetime.strptime(agg, "%Y-%m-%d") if agg else None
+        ws[f"C{riga}"].number_format = "dd/mm/yyyy"
+        # Il testo va dentro tale e quale: nessuna interpretazione, solo il
+        # ritorno a capo automatico per poterlo leggere anche da Excel.
+        corpo = lista.get("testo")
+        ws[f"D{riga}"].value = None if corpo is None or corpo == "" else str(corpo)
+        ws[f"D{riga}"].alignment = Alignment(wrap_text=True, vertical="top")
+
+    for riga in range(PRIMA_RIGA + len(valide), ultima_prima + 1):
+        for col in COLONNE_DECKLIST:
+            ws[f"{col}{riga}"].value = None
+
+    return len(valide)
+
+
 def _fai_backup(percorso: Path) -> Path:
     BACKUP.mkdir(parents=True, exist_ok=True)
     quando = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -367,7 +457,7 @@ def _fai_backup(percorso: Path) -> Path:
     return copia
 
 
-def scrivi(percorso: Path, match: list[dict]) -> dict:
+def scrivi(percorso: Path, match: list[dict], decklist: list[dict] | None = None) -> dict:
     """
     Riscrive le colonne A-K del foglio Match con il registro passato.
 
@@ -411,6 +501,10 @@ def scrivi(percorso: Path, match: list[dict]) -> dict:
 
     _rigenera_liste(wb, {"liste": _liste_da(ordinati)})
 
+    # `decklist` assente significa "non toccare quel foglio": un client vecchio
+    # che manda solo i match non deve cancellare le liste salvate.
+    liste_scritte = None if decklist is None else _scrivi_decklist(wb, decklist)
+
     # Le formule L-R non hanno piu' un valore in cache dopo la riscrittura:
     # senza questo Excel potrebbe mostrarle vuote finche' non si tocca una cella.
     wb.calculation.fullCalcOnLoad = True
@@ -422,6 +516,7 @@ def scrivi(percorso: Path, match: list[dict]) -> dict:
 
     return {
         "scritti": len(ordinati),
+        "listeScritte": liste_scritte,
         "rimosse": svuotate,
         "formuleAggiunte": formule_aggiunte,
         "backup": _relativo(backup),

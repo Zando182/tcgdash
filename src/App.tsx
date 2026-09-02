@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BarraFiltri } from './components/BarraFiltri'
 import { DatiView } from './components/DatiView'
 import { InserisciView } from './components/InserisciView'
+import { ListeView } from './components/ListeView'
 import { MatchupView } from './components/MatchupView'
 import { MetagameView } from './components/MetagameView'
 import { NoteView } from './components/NoteView'
@@ -11,7 +12,7 @@ import { applicaFiltri, riepiloga } from './lib/stats'
 import { useFiltri } from './store/useFiltri'
 import { useRegistro } from './store/useMatch'
 
-type Pagina = 'inserisci' | 'panoramica' | 'matchup' | 'note' | 'dati' | 'metagame'
+type Pagina = 'inserisci' | 'panoramica' | 'matchup' | 'note' | 'liste' | 'dati' | 'metagame'
 type Sezione = 'mia' | 'metagame'
 
 type VoceSezione = {
@@ -34,6 +35,7 @@ const SEZIONI: VoceSezione[] = [
       { id: 'panoramica', etichetta: 'Panoramica', icona: '📊' },
       { id: 'matchup', etichetta: 'Matchup', icona: '🧩' },
       { id: 'note', etichetta: 'Note', icona: '📝' },
+      { id: 'liste', etichetta: 'Liste', icona: '🗂️' },
       { id: 'dati', etichetta: 'Dati', icona: '💾' },
     ],
   },
@@ -47,7 +49,7 @@ const SEZIONI: VoceSezione[] = [
 const PAGINE = SEZIONI.flatMap((s) => s.pagine.map((p) => ({ ...p, sezione: s.id })))
 
 // Le pagine che leggono i filtri globali. La pagina inserisci ha una barra sua,
-// sopra il registro; dati e metagame non filtrano niente.
+// sopra il registro; liste, dati e metagame non filtrano niente.
 const CON_FILTRI: Pagina[] = ['panoramica', 'matchup', 'note']
 
 export default function App() {
@@ -207,6 +209,7 @@ export default function App() {
         {pagina === 'panoramica' && <PanoramicaView match={filtrati} />}
         {pagina === 'matchup' && <MatchupView match={filtrati} />}
         {pagina === 'note' && <NoteView match={filtrati} />}
+        {pagina === 'liste' && <ListeView />}
         {pagina === 'dati' && <DatiView />}
         {pagina === 'metagame' && <MetagameView />}
       </main>

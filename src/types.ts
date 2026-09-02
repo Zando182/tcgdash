@@ -21,6 +21,24 @@ export type Match = {
   note: string
 }
 
+/**
+ * Una lista salvata: il testo incollato dal sito, cosi' com'e'.
+ *
+ * `testo` non viene mai interpretato — niente conteggio carte, niente
+ * validazione, niente formato imposto. E' un blocco di testo che serve a
+ * ritrovare cosa c'era dentro un mazzo, non a controllarlo.
+ */
+export type Lista = {
+  id: string
+  /** Come si chiama la lista, es. "Dragapolli v3". Corrisponde alla colonna DeckList dei match. */
+  nome: string
+  /** Il mazzo a cui appartiene, se indicato. */
+  mazzo: string
+  /** Data ISO dell'ultimo salvataggio, stringa vuota se mai indicata. */
+  aggiornata: string
+  testo: string
+}
+
 /** Elenchi dei valori gia' usati: alimentano i menu a tendina del form. */
 export type Liste = {
   deck: string[]
@@ -36,6 +54,8 @@ export type Seed = {
   generatoIl: string
   liste: Liste
   match: Match[]
+  /** Assente nei seed generati prima che esistessero le liste salvate. */
+  decklist?: Lista[]
 }
 
 /** Le dimensioni su cui si puo' filtrare e spezzare il winrate. */

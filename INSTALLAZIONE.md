@@ -254,12 +254,14 @@ riscriverebbe il file con la copia vecchia che la pagina ha in memoria.
 Il file è **`data/TCG_Match.xlsx`** dentro la cartella del progetto. È il
 database: la dashboard legge da lì e scrive lì.
 
-Ha due fogli soli:
+I fogli sono questi:
 
 - **Match** — la tabella delle partite. Le colonne da riempire sono quelle da
   **A** a **K** (Data, Formato, Deck, DeckList, Deck Avversario, 1°/2°,
   Risultato, TAG, Torneo, Note). Le colonne da **L** a **R** sono formule: non
   toccarle, si riempiono da sole.
+- **Decklist** — il testo delle liste che salvi dalla pagina Liste. Compare la
+  prima volta che ne salvi una.
 - **Liste** — nascosto. Serve solo alle tendine del foglio Match e si aggiorna
   da solo.
 

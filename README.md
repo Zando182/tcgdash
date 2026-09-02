@@ -80,10 +80,11 @@ Il file di partenza aveva dieci fogli: oltre a Match c'erano Dashboard, Matrice 
 scheda per ogni deck, Leggimi e Liste, con 12 grafici e 3 immagini. Erano elaborazioni che la
 dashboard rifa' in tempo reale e filtrabili, quindi sono state eliminate (`npm run db:pulisci`).
 
-Restano due fogli, e il file e' passato da **428 KB a 53 KB**:
+Il file e' passato da **428 KB a 53 KB**. I fogli rimasti sono tutti dati, nessuna elaborazione:
 
-- **Match** — la tabella dei dati, invariata: stesse colonne, stesse formule, stessa
+- **Match** — la tabella delle partite, invariata: stesse colonne, stesse formule, stessa
   formattazione condizionale, stesse tendine.
+- **Decklist** — il testo delle liste salvate dalla pagina Liste. Creato al primo salvataggio.
 - **Liste** (nascosto) — la sorgente delle tendine di Match. Non e' un'elaborazione: senza, i
   menu a discesa del foglio si romperebbero. Viene rigenerato a ogni scrittura, quindi contiene
   sempre anche i mazzi e gli avversari aggiunti dal sito.
@@ -115,6 +116,7 @@ la serie di vittorie o sconfitte in corso, i tag e la ricerca nelle note.
 | **Panoramica** | Winrate, split 1°/2°, serie in corso, andamento settimanale, confronto fra i tuoi mazzi, avversari piu' incontrati, tag, e gli ultimi match con le note per esteso. |
 | **Matchup** | La matrice matchup, con righe e colonne a scelta. Il colore va dal rosso al verde e si accende con le partite giocate. Un puntino ambra segnala che su quel matchup ci sono note. |
 | **Note** | Il playbook: ogni nota scritta nei match, raggruppata per matchup (o per avversario, per mazzo, in ordine di data), con ricerca ed evidenziazione. In fondo, gli avversari incontrati piu' volte su cui non hai ancora scritto niente. |
+| **Liste** | Le liste dei mazzi, incollate come testo. Nessun controllo e nessun conteggio: qualunque formato va bene, viene salvato tale e quale. Sotto il campo di inserimento ci sono tutte le liste salvate, con ricerca dentro il testo; e la pagina suggerisce quali scrivere, prendendo i nomi di lista che compaiono nei match ma non hanno ancora un testo. |
 | **Dati** | Dove finiscono i match, stato del workbook, backup JSON, export CSV, import. |
 
 ### Metagame
@@ -161,7 +163,7 @@ disco, quindi mostra il seed e salva in `localStorage`. La modalita' Excel esist
 ## Struttura
 
 ```
-data/TCG_Match.xlsx        il database: foglio Match + Liste (nascosto)
+data/TCG_Match.xlsx        il database: Match + Decklist + Liste (nascosto)
 data/backup/               copie automatiche prima di ogni scrittura (non versionate)
 scripts/tcg_excel.py       lettura, scrittura e pulizia del workbook
 scripts/excel_db.py        CLI JSON usata dal server (stato / leggi / scrivi / pulisci)
@@ -170,7 +172,7 @@ scripts/ingest_xlsx.py     workbook -> src/data/seed.json
 scripts/serve.mjs          server statico per dist/ + API, senza dipendenze
 src/lib/stats.ts           settimane ISO, filtri, aggregazioni, andamento, matrice matchup
 src/lib/api.ts             cliente dell'API locale
-src/store/useMatch.ts      registro, modalita' Excel/browser, scrittura verso il workbook
+src/store/useMatch.ts      registro e liste, modalita' Excel/browser, scrittura verso il workbook
 src/store/useFiltri.ts     filtri condivisi da tutte le pagine
 src/components/            una vista per pagina, piu' charts.tsx (SVG, nessuna libreria) e ui.tsx
 ```
