@@ -9,12 +9,6 @@ export function winrate(vittorie: number, partite: number): number | null {
   return partite > 0 ? vittorie / partite : null
 }
 
-/** Differenza in punti percentuali, con segno: +12,5 pt. */
-export function delta(v: number): string {
-  const s = (v * 100).toFixed(1).replace('.', ',')
-  return `${v > 0 ? '+' : ''}${s} pt`
-}
-
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 
 /** "2026-08-27" -> "27 ago 2026". */

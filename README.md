@@ -5,8 +5,11 @@ direttamente nel workbook `data/TCG_Match.xlsx`, che resta il database: winrate 
 settimana, matrice matchup e un playbook che raccoglie tutte le note, raggruppate per matchup.
 
 Ogni filtro (mazzo, mazzo avversario, espansione, lista, torneo, turno, tag, periodo) vale per
-tutte le pagine insieme: scegli il mazzo una volta e panoramica, andamento, matchup e note
-mostrano lo stesso sottoinsieme di partite.
+tutte le pagine insieme: scegli il mazzo una volta e panoramica, matchup e note mostrano lo
+stesso sottoinsieme di partite.
+
+La navigazione ha due sezioni: **La mia Dashboard**, che analizza le tue partite, e **Metagame**,
+per ora un segnaposto.
 
 ## Avvio
 
@@ -92,23 +95,29 @@ Restano due fogli, e il file e' passato da **428 KB a 53 KB**:
 | **Scheda deck** → riepilogo generale, winrate da 1°/2° | Panoramica, filtrando su quel mazzo |
 | **Scheda deck** → winrate per matchup | Panoramica, "Mazzi avversari piu' incontrati" |
 | **Scheda deck** → winrate per formato | Matchup, righe = Mio mazzo, colonne = Espansione |
-| **Scheda deck** → winrate per turno | Andamento, "Per turno", oppure i riquadri della Panoramica |
+| **Scheda deck** → winrate per turno | Panoramica, riquadri "Da 1°" e "Da 2°" e colonne della tabella "Confronto tra mazzi"; oppure Matchup con righe o colonne = Turno |
 | **Scheda deck** → note per avversario | Note, il playbook (raggruppato per matchup, con ricerca) |
 | **Leggimi** | Questo README e i testi di aiuto sotto ogni titolo |
 
-In piu', rispetto al workbook, la dashboard aggiunge l'andamento del winrate **per settimana** su
-qualunque dimensione, la serie in corso, i tag e la ricerca nelle note.
+In piu', rispetto al workbook, la dashboard aggiunge l'andamento del winrate **per settimana**,
+la serie di vittorie o sconfitte in corso, i tag e la ricerca nelle note.
 
 ## Le pagine
+
+### La mia Dashboard
 
 | Pagina | A cosa serve |
 | --- | --- |
 | **Inserisci** | Il form per registrare un match e il registro completo, con modifica, duplica ed elimina. I campi che cambiano di rado (espansione, mazzo, lista, torneo) si ricordano dell'ultima partita: in una sessione di ladder cambi solo avversario, turno ed esito. |
 | **Panoramica** | Winrate, split 1°/2°, serie in corso, andamento settimanale, confronto fra i tuoi mazzi, avversari piu' incontrati, tag, e gli ultimi match con le note per esteso. |
-| **Andamento** | Come cambia il winrate **settimana per settimana**, spezzato su una qualunque dimensione: complessivo, per mazzo, per mazzo avversario, per espansione, per lista, per turno, per torneo, per tag. Con la tabella degli stessi numeri e la variazione fra prima e ultima settimana. |
 | **Matchup** | La matrice matchup, con righe e colonne a scelta. Il colore va dal rosso al verde e si accende con le partite giocate. Un puntino ambra segnala che su quel matchup ci sono note. |
 | **Note** | Il playbook: ogni nota scritta nei match, raggruppata per matchup (o per avversario, per mazzo, in ordine di data), con ricerca ed evidenziazione. In fondo, gli avversari incontrati piu' volte su cui non hai ancora scritto niente. |
 | **Dati** | Dove finiscono i match, stato del workbook, backup JSON, export CSV, import. |
+
+### Metagame
+
+Segnaposto: mostra un avviso di lavori in corso. Mentre La mia Dashboard guarda le tue partite,
+questa sezione guardera' il campo da gioco nel suo complesso.
 
 ### Come si leggono i numeri
 
@@ -118,8 +127,6 @@ qualunque dimensione, la serie in corso, i tag e la ricerca nelle note.
   sotto la linea, perche' una percentuale senza volume inganna.
 - **Linea spezzata** = settimana senza partite. Unire i punti darebbe l'illusione di un andamento
   che non c'e'.
-- **Settimana per settimana / Cumulato** — la prima mostra il winrate del singolo periodo, la
-  seconda la media da inizio periodo: si muove meno e mostra la tendenza di fondo.
 
 ## Backup ed export
 
