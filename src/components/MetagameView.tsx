@@ -4,6 +4,7 @@ import {
   aggiornaMetagame,
   datiMetagame,
   matchupDi,
+  partiteSenzaLista,
   riepilogoArchetipi,
   statoMetagame,
   torneiFiltrati,
@@ -79,6 +80,7 @@ export function MetagameView() {
     () => dati.partite.reduce((n, p) => (dentro.has(p[0]) ? n + 1 : n), 0),
     [dati, dentro],
   )
+  const senzaLista = useMemo(() => partiteSenzaLista(dati, dentro), [dati, dentro])
 
   const visibili = useMemo(() => {
     const q = cerca.trim().toLowerCase()
@@ -115,9 +117,18 @@ export function MetagameView() {
         <Stat
           label="Tornei scaricati"
           value={caricamento ? '…' : dentro.size}
-          sub={dentro.size !== dati.tornei.length ? `di ${dati.tornei.length} in copia` : 'online, Limitless'}
+          sub={dentro.size !== dati.tornei.length ? `di ${dati.tornei.length} in copia` : 'da Limitless'}
         />
-        <Stat label="Partite" value={caricamento ? '…' : partiteFiltrate.toLocaleString('it-IT')} />
+        <Stat
+          label="Partite"
+          value={caricamento ? '…' : (partiteFiltrate - senzaLista).toLocaleString('it-IT')}
+          sub={
+            senzaLista > 0
+              ? `${senzaLista} escluse: mazzo non registrato`
+              : 'tutte con entrambi i mazzi noti'
+          }
+          tone={senzaLista > partiteFiltrate / 4 ? 'warn' : 'default'}
+        />
         <Stat
           label="Archetipi"
           value={caricamento ? '…' : visibili.length}
@@ -132,7 +143,7 @@ export function MetagameView() {
 
       <Section
         title="Dati"
-        hint="I tornei online della piattaforma Limitless, scaricati dalla loro API pubblica e tenuti in copia locale: la sezione resta consultabile anche senza rete."
+        hint="I tornei della piattaforma Limitless, scaricati dalla loro API pubblica e tenuti in copia locale: la sezione resta consultabile anche senza rete."
         right={
           <button type="button" className="btn-primary text-xs" disabled={scaricando} onClick={() => void scarica()}>
             {scaricando ? 'Scarico…' : mai ? 'Scarica i tornei' : 'Scarica i nuovi tornei'}
@@ -147,7 +158,9 @@ export function MetagameView() {
           )}
           {esito && !errore && (
             <p className="text-ink-300">
-              Scaricati {esito.scaricati} tornei.{' '}
+              Scaricati {esito.scaricati} tornei.
+              {esito.scartati > 0 && ` Tolti ${esito.scartati} tornei GLC.`}
+              {esito.completati > 0 && ` Classificati ${esito.completati} gia' in copia.`}{' '}
               {esito.restano > 0 && (
                 <>
                   Ne restano <strong>{esito.restano}</strong>
@@ -164,34 +177,61 @@ export function MetagameView() {
               circa un minuto, e si ferma da solo prima di esaurire il credito verso Limitless.
             </p>
           )}
-          <p className="text-[13px] text-ink-400">
-            Sono tornei <strong>online</strong>. Le divisioni Masters, Senior e Junior riguardano i
-            tornei dal vivo, che stanno su un altro sito senza API pubblica: da qui non si possono
-            prendere.
-          </p>
+          {stato && (stato.online > 0 || stato.dalVivo > 0) && (
+            <p className="text-[13px] text-ink-400">
+              In copia: {stato.online} {stato.online === 1 ? 'torneo' : 'tornei'} online e{' '}
+              {stato.dalVivo} dal vivo.
+              {stato.senzaDettagli > 0 && ` ${stato.senzaDettagli} ancora da classificare.`}
+            </p>
+          )}
         </div>
       </Section>
 
       {!mai && (
         <>
           <div className="card flex flex-wrap items-end gap-x-4 gap-y-2 p-2.5">
-            {formati.length > 1 && (
-              <label className="flex items-center gap-1.5">
-                <span className="text-[11px] tracking-wide text-ink-400 uppercase">Formato</span>
-                <select
-                  className="field py-1 text-xs"
-                  value={filtri.formato}
-                  onChange={(e) => setFiltri((f) => ({ ...f, formato: e.target.value }))}
-                >
-                  <option value="">tutti</option>
-                  {formati.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] tracking-wide text-ink-400 uppercase">Dove</span>
+              {(
+                [
+                  ['tutti', 'Tutti'],
+                  ['online', 'Online'],
+                  ['dalvivo', 'Dal vivo'],
+                ] as const
+              ).map(([valore, etichetta]) => {
+                const quanti =
+                  valore === 'tutti'
+                    ? dati.tornei.length
+                    : dati.tornei.filter((t) => t.online === (valore === 'online')).length
+                return (
+                  <button
+                    key={valore}
+                    type="button"
+                    className={filtri.dove === valore ? 'chip-on' : 'chip'}
+                    onClick={() => setFiltri((f) => ({ ...f, dove: valore }))}
+                  >
+                    {etichetta}
+                    <span className="text-ink-500">{quanti}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <label className="flex items-center gap-1.5">
+              <span className="text-[11px] tracking-wide text-ink-400 uppercase">Formato</span>
+              <select
+                className="field py-1 text-xs"
+                value={filtri.formato}
+                onChange={(e) => setFiltri((f) => ({ ...f, formato: e.target.value }))}
+              >
+                <option value="">tutti</option>
+                {formati.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <label className="flex items-center gap-1.5">
               <span className="text-[11px] tracking-wide text-ink-400 uppercase">Dal</span>

@@ -6,11 +6,19 @@
  * dall'esterno: dall'API vengono i fatti (chi giocava cosa, chi ha battuto
  * chi), le percentuali si fanno qui.
  *
- * Sono tornei **online**: le divisioni Masters/Senior/Junior appartengono ai
- * tornei dal vivo e non esistono su questa piattaforma.
+ * Ogni torneo sa se si e' giocato online o dal vivo, quindi si possono
+ * guardare separatamente.
  */
 
 const BASE = 'api/metagame'
+
+/**
+ * Nome che lo scaricatore da' a chi non ha una lista registrata. Non e' un
+ * archetipo: nei tornei dal vivo capita che le liste non si consegnino, e
+ * lasciarlo negli elenchi lo farebbe comparire in testa come se fosse il mazzo
+ * piu' giocato.
+ */
+export const ARCHETIPO_IGNOTO = 'Sconosciuto'
 
 /** Esito di una partita, come lo registra lo scaricatore. */
 export const PAREGGIO = 0
@@ -24,6 +32,10 @@ export type Torneo = {
   data: string
   giocatori: number
   formato: string
+  /** true online, false dal vivo, null se i dettagli non sono ancora arrivati. */
+  online: boolean | null
+  piattaforma: string
+  organizzatore: string
   /** Indice archetipo (come stringa) -> quanti giocatori l'hanno portato. */
   conteggi: Record<string, number>
 }
@@ -46,11 +58,18 @@ export type StatoMetagame = {
   dal: string
   al: string
   formati: string[]
+  online: number
+  dalVivo: number
+  senzaDettagli: number
   errore?: string
 }
 
 export type EsitoAggiornamento = {
   scaricati: number
+  /** Tornei gia' in copia a cui mancava il dato online/dal vivo. */
+  completati: number
+  /** Tornei tolti perche' di un formato che non si segue piu' (il GLC). */
+  scartati: number
   restano: number
   fermatoDalLimite: boolean
   creditoResiduo: number
@@ -99,8 +118,12 @@ export async function aggiornaMetagame(): Promise<EsitoAggiornamento> {
 
 // ------------------------------------------------------------- aggregazioni
 
+/** Dove si e' giocato: tutti, solo online, solo dal vivo. */
+export type DoveGiocato = 'tutti' | 'online' | 'dalvivo'
+
 export type FiltriMeta = {
   formato: string
+  dove: DoveGiocato
   dal: string
   al: string
   /** Esclude i tornei piccoli, dove i matchup sono rumore. */
@@ -109,6 +132,7 @@ export type FiltriMeta = {
 
 export const FILTRI_META_VUOTI: FiltriMeta = {
   formato: '',
+  dove: 'tutti',
   dal: '',
   al: '',
   giocatoriMinimi: 0,
@@ -119,6 +143,10 @@ export function torneiFiltrati(dati: DatiMetagame, f: FiltriMeta): Set<number> {
   const dentro = new Set<number>()
   dati.tornei.forEach((t, i) => {
     if (f.formato && t.formato !== f.formato) return
+    // I tornei senza dettagli restano fuori da entrambi i filtri: non si sa
+    // dove si siano giocati, e tirare a indovinare falserebbe i numeri.
+    if (f.dove === 'online' && t.online !== true) return
+    if (f.dove === 'dalvivo' && t.online !== false) return
     if (f.dal && t.data < f.dal) return
     if (f.al && t.data > f.al) return
     if (f.giocatoriMinimi && t.giocatori < f.giocatoriMinimi) return
@@ -194,8 +222,19 @@ export function riepilogoArchetipi(dati: DatiMetagame, dentro: Set<number>): Rig
         share: totaleGiocatori > 0 ? giocatori[indice] / totaleGiocatori : null,
       }
     })
-    .filter((r) => r.partite > 0 || r.giocatori > 0)
+    .filter((r) => (r.partite > 0 || r.giocatori > 0) && r.nome !== ARCHETIPO_IGNOTO)
     .sort((a, b) => b.partite - a.partite || a.nome.localeCompare(b.nome, 'it'))
+}
+
+/** Quante partite, fra i tornei filtrati, hanno almeno un mazzo non registrato. */
+export function partiteSenzaLista(dati: DatiMetagame, dentro: Set<number>): number {
+  const ignoto = dati.archetipi.indexOf(ARCHETIPO_IGNOTO)
+  if (ignoto < 0) return 0
+  let n = 0
+  for (const [t, a, b] of dati.partite) {
+    if (dentro.has(t) && (a === ignoto || b === ignoto)) n++
+  }
+  return n
 }
 
 export type RigaMatchup = {
@@ -247,6 +286,7 @@ export function matchupDi(
   const righe: RigaMatchup[] = []
   for (let i = 0; i < n; i++) {
     if (partite[i] < minimoPartite || partite[i] === 0) continue
+    if (dati.archetipi[i] === ARCHETIPO_IGNOTO) continue
     const decise = partite[i] - pareggi[i]
     righe.push({
       indice: i,

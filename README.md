@@ -129,13 +129,16 @@ richiede chiave. Per ogni torneo si scaricano le classifiche (chi giocava cosa) 
 accoppiamenti (chi ha battuto chi): incrociandoli si ricava partita per partita quale archetipo ha
 battuto quale. Dall'esterno arrivano solo i fatti, le percentuali le calcola la dashboard.
 
-Filtri: formato, periodo, dimensione minima del torneo, e una soglia di partite minime sotto la
-quale un incrocio non viene mostrato — una percentuale su due partite e' rumore travestito da
-informazione.
+Filtri: **dove si e' giocato** (online o dal vivo), formato, periodo, dimensione minima del
+torneo, e una soglia di partite minime sotto la quale un incrocio non viene mostrato — una
+percentuale su due partite e' rumore travestito da informazione.
 
-**Sono tornei online.** Le divisioni Masters, Senior e Junior riguardano i tornei dal vivo, che
-stanno su `limitlesstcg.com`: quel sito ha i filtri giusti ma nessuna API pubblica e nessuna
-matrice di matchup esposta, quindi da li' non si prende niente senza raschiare l'HTML.
+Il GLC non viene scaricato: mazzi monotipo e singleton sono un gioco diverso, e i suoi matchup non
+dicono niente sullo standard.
+
+Chi non ha consegnato la lista finisce sotto "Sconosciuto", che non e' un archetipo e resta fuori
+da classifiche e matchup; le partite cosi' escluse sono contate a parte. Online non capita quasi
+mai, dal vivo succede spesso.
 
 I dati scaricati stanno in `data/metagame.json`, che non e' versionato: si riscarica. Lo scarico e'
 **incrementale** perche' l'API concede 50 richieste ogni 5 minuti e ogni torneo ne costa due: ogni
@@ -188,7 +191,7 @@ data/backup/               copie automatiche prima di ogni scrittura (non versio
 scripts/tcg_excel.py       lettura, scrittura e pulizia del workbook
 scripts/excel_db.py        CLI JSON usata dal server (stato / leggi / scrivi / pulisci)
 scripts/api.mjs            rotte /api/excel/*, montate sia da serve.mjs sia da vite.config.ts
-scripts/metagame.py        scarica i tornei online Limitless -> data/metagame.json
+scripts/metagame.py        scarica i tornei Limitless -> data/metagame.json
 scripts/ingest_xlsx.py     workbook -> src/data/seed.json
 scripts/serve.mjs          server statico per dist/ + API, senza dipendenze
 src/lib/stats.ts           settimane ISO, filtri, aggregazioni, andamento, matrice matchup
@@ -213,7 +216,7 @@ I grafici sono SVG scritti a mano: nessuna libreria di charting, nessuna richies
 | `npm run db:pulisci` | Elimina dal workbook i fogli di elaborazione (idempotente) |
 | `npm run ingest` | Riallinea `src/data/seed.json` al workbook |
 | `npm run meta` | Cosa c'e' in copia locale del metagame |
-| `npm run meta:aggiorna` | Scarica i tornei online nuovi da Limitless |
+| `npm run meta:aggiorna` | Scarica i tornei nuovi da Limitless |
 | `npm run serve` | Serve `dist/` senza ricompilare |
 
 ## Stack

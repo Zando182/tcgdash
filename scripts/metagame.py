@@ -12,9 +12,9 @@ ne costa 2, quindi non si puo' rifare tutto ogni volta. La cache in
 data/metagame.json tiene i tornei gia' scaricati e ogni aggiornamento aggiunge
 solo quelli nuovi, fermandosi prima di esaurire il credito.
 
-Coperti solo i tornei online: sulla piattaforma Limitless non esistono le
-divisioni Masters/Senior/Junior, che riguardano i tornei dal vivo e stanno su
-un altro sito senza API pubblica.
+Ogni torneo porta con se' se si e' giocato online o dal vivo (`isOnline` dai
+dettagli), cosi' la dashboard puo' separarli. Costa una richiesta in piu' per
+torneo, ma e' l'unico modo di distinguerli.
 """
 
 from __future__ import annotations
@@ -34,9 +34,10 @@ API = "https://play.limitlesstcg.com/api"
 GIOCO = "PTCG"
 UA = "TCGDash/1.0 (dashboard personale, uso non commerciale)"
 
-# Quanti tornei scaricare al massimo per aggiornamento. Ognuno costa due
-# richieste: 20 tornei sono 40 richieste, sotto il tetto di 50 in 5 minuti.
-TORNEI_PER_VOLTA = 20
+# Quanti tornei scaricare al massimo per aggiornamento. Ognuno costa tre
+# richieste (dettagli, classifica, accoppiamenti): 14 tornei sono 42
+# richieste, sotto il tetto di 50 in 5 minuti.
+TORNEI_PER_VOLTA = 14
 
 # Sotto questa soglia di richieste rimaste ci si ferma e si riprende dopo:
 # meglio un aggiornamento parziale che una raffica di errori 429.
@@ -45,6 +46,10 @@ CREDITO_MINIMO = 6
 # Tornei troppo piccoli danno matchup che non dicono niente e consumano
 # credito: si saltano.
 GIOCATORI_MINIMI = 16
+
+# Formati che non si scaricano proprio: il GLC e' un gioco diverso (mazzi
+# monotipo, singleton) e i suoi matchup non dicono niente sullo standard.
+FORMATI_ESCLUSI = {"GLC"}
 
 # Esiti registrati per ogni partita.
 VINCE_A, VINCE_B, PAREGGIO = 1, 2, 0
@@ -117,6 +122,17 @@ def _nome_archetipo(voce: dict) -> str:
     return nome or "Sconosciuto"
 
 
+def _dettagli(torneo_id: str) -> tuple[dict, int]:
+    """
+    Dettagli di un torneo: da qui viene `isOnline`, l'unico campo che dice se
+    si e' giocato online o dal vivo. Nell'elenco dei tornei non c'e'.
+    """
+    dati, rimaste = _chiama(f"tournaments/{torneo_id}/details")
+    if not isinstance(dati, dict):
+        return {}, rimaste
+    return dati, rimaste
+
+
 def _partite_del_torneo(torneo_id: str) -> tuple[list[tuple[str, str, int]], dict[str, int], int]:
     """
     Le partite di un torneo come (archetipoA, archetipoB, esito), piu' quanti
@@ -163,6 +179,56 @@ def _partite_del_torneo(torneo_id: str) -> tuple[list[tuple[str, str, int]], dic
     return partite, conteggi, rimaste
 
 
+def _scarta_formati_esclusi(dati: dict) -> int:
+    """
+    Toglie dalla copia i tornei di formati che non ci interessano piu'.
+
+    Le partite puntano ai tornei per indice, quindi non basta cancellare le
+    righe: va rifatta la numerazione, altrimenti ogni partita finirebbe
+    attribuita al torneo sbagliato.
+    """
+    tenuti: list[dict] = []
+    nuovo_indice: dict[int, int] = {}
+    for vecchio, t in enumerate(dati["tornei"]):
+        if (t.get("formato") or "") in FORMATI_ESCLUSI:
+            continue
+        nuovo_indice[vecchio] = len(tenuti)
+        tenuti.append(t)
+
+    tolti = len(dati["tornei"]) - len(tenuti)
+    if tolti == 0:
+        return 0
+
+    dati["tornei"] = tenuti
+    dati["partite"] = [
+        [nuovo_indice[p[0]], p[1], p[2], p[3]] for p in dati["partite"] if p[0] in nuovo_indice
+    ]
+    return tolti
+
+
+def _completa_dettagli(dati: dict, rimaste: int) -> tuple[int, int, bool]:
+    """
+    Recupera `online` per i tornei presi prima che lo si registrasse.
+    Restituisce (completati, credito residuo, fermato dal limite).
+    """
+    completati = 0
+    for t in dati["tornei"]:
+        if t.get("online") is not None:
+            continue
+        if rimaste <= CREDITO_MINIMO:
+            return completati, rimaste, True
+        try:
+            dett, rimaste = _dettagli(t["id"])
+        except LimiteRaggiunto:
+            return completati, rimaste, True
+        t["online"] = dett.get("isOnline")
+        t["piattaforma"] = dett.get("platform") or ""
+        t["organizzatore"] = ((dett.get("organizer") or {}).get("name") or "").strip()
+        completati += 1
+        time.sleep(0.3)
+    return completati, rimaste, False
+
+
 def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATORI_MINIMI) -> dict:
     """
     Scarica i tornei non ancora in cache e li aggiunge.
@@ -172,9 +238,14 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
     giro fra cinque minuti.
     """
     dati = leggi_cache()
+    scartati = _scarta_formati_esclusi(dati)
     gia_presi = {t["id"] for t in dati["tornei"]}
 
     elenco, rimaste = _chiama("tournaments", {"game": GIOCO, "limit": 100})
+
+    # Prima si completano i tornei gia' in copia a cui manca il dato
+    # online/dal vivo: senza, il filtro li lascerebbe fuori per sempre.
+    completati, rimaste, fermato = _completa_dettagli(dati, rimaste)
     if not isinstance(elenco, list):
         raise RuntimeError("Elenco tornei non valido.")
 
@@ -184,6 +255,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
         if t.get("id")
         and t["id"] not in gia_presi
         and (t.get("players") or 0) >= giocatori_minimi
+        and (t.get("format") or "") not in FORMATI_ESCLUSI
     ]
 
     indice_arch = {nome: i for i, nome in enumerate(dati["archetipi"])}
@@ -195,7 +267,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
         return indice_arch[nome]
 
     scaricati = 0
-    fermato_dal_limite = False
+    fermato_dal_limite = fermato
 
     for t in candidati:
         if scaricati >= max_tornei:
@@ -204,6 +276,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
             fermato_dal_limite = True
             break
         try:
+            dett, rimaste = _dettagli(t["id"])
             partite, conteggi, rimaste = _partite_del_torneo(t["id"])
         except LimiteRaggiunto:
             fermato_dal_limite = True
@@ -217,6 +290,11 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
                 "data": (t.get("date") or "")[:10],
                 "giocatori": t.get("players") or 0,
                 "formato": t.get("format") or "",
+                # None quando i dettagli non sono arrivati: meglio "non lo so"
+                # che dare per scontato che sia online.
+                "online": dett.get("isOnline"),
+                "piattaforma": dett.get("platform") or "",
+                "organizzatore": ((dett.get("organizer") or {}).get("name") or "").strip(),
                 "conteggi": {str(idx(n)): c for n, c in conteggi.items()},
             }
         )
@@ -232,6 +310,8 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
 
     return {
         "scaricati": scaricati,
+        "completati": completati,
+        "scartati": scartati,
         "restano": max(0, len(candidati) - scaricati),
         "fermatoDalLimite": fermato_dal_limite,
         "creditoResiduo": rimaste,
@@ -254,6 +334,9 @@ def stato() -> dict:
         "dal": date[0] if date else "",
         "al": date[-1] if date else "",
         "formati": formati,
+        "online": sum(1 for t in dati["tornei"] if t.get("online") is True),
+        "dalVivo": sum(1 for t in dati["tornei"] if t.get("online") is False),
+        "senzaDettagli": sum(1 for t in dati["tornei"] if t.get("online") is None),
     }
 
 
