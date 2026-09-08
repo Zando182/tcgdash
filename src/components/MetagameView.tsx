@@ -3,6 +3,7 @@ import { dataIt, pct } from '../lib/format'
 import {
   aggiornaMetagame,
   datiMetagame,
+  espansioni,
   matchupDi,
   partiteSenzaLista,
   riepilogoArchetipi,
@@ -72,10 +73,7 @@ export function MetagameView() {
     [dati, dentro, scelto, minimoPartite],
   )
 
-  const formati = useMemo(
-    () => [...new Set(dati.tornei.map((t) => t.formato).filter(Boolean))].sort(),
-    [dati],
-  )
+  const uscite = useMemo(() => espansioni(dati), [dati])
   const partiteFiltrate = useMemo(
     () => dati.partite.reduce((n, p) => (dentro.has(p[0]) ? n + 1 : n), 0),
     [dati, dentro],
@@ -143,7 +141,7 @@ export function MetagameView() {
 
       <Section
         title="Dati"
-        hint="I tornei della piattaforma Limitless, scaricati dalla loro API pubblica e tenuti in copia locale: la sezione resta consultabile anche senza rete."
+        hint="Solo tornei Standard della piattaforma Limitless, scaricati dalla loro API pubblica e tenuti in copia locale: la sezione resta consultabile anche senza rete."
         right={
           <button type="button" className="btn-primary text-xs" disabled={scaricando} onClick={() => void scarica()}>
             {scaricando ? 'Scarico…' : mai ? 'Scarica i tornei' : 'Scarica i nuovi tornei'}
@@ -175,6 +173,13 @@ export function MetagameView() {
             <p className="text-ink-300">
               Non c'è ancora niente in copia. Premi <strong>Scarica i tornei</strong>: ci vuole
               circa un minuto, e si ferma da solo prima di esaurire il credito verso Limitless.
+            </p>
+          )}
+          {uscite.length === 0 && dati.tornei.length > 0 && (
+            <p className="text-[13px] text-ink-400">
+              Tutti i tornei in copia stanno nella stessa espansione: la finestra scaricata e'
+              troppo stretta perche' si veda un'uscita. Scaricandone altri il filtro Espansione si
+              popola da solo.
             </p>
           )}
           {stato && (stato.online > 0 || stato.dalVivo > 0) && (
@@ -217,17 +222,25 @@ export function MetagameView() {
               })}
             </div>
 
-            <label className="flex items-center gap-1.5">
-              <span className="text-[11px] tracking-wide text-ink-400 uppercase">Formato</span>
+            <label
+              className="flex items-center gap-1.5"
+              title={
+                uscite.length === 0
+                  ? 'Nei dati scaricati non si vede nessuna uscita: sono tutti nello stesso pool di carte.'
+                  : "L'ultima uscita gia' presente quando si e' giocato il torneo"
+              }
+            >
+              <span className="text-[11px] tracking-wide text-ink-400 uppercase">Espansione</span>
               <select
                 className="field py-1 text-xs"
-                value={filtri.formato}
-                onChange={(e) => setFiltri((f) => ({ ...f, formato: e.target.value }))}
+                value={filtri.espansione}
+                disabled={uscite.length === 0}
+                onChange={(e) => setFiltri((f) => ({ ...f, espansione: e.target.value }))}
               >
-                <option value="">tutti</option>
-                {formati.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
+                <option value="">{uscite.length === 0 ? 'una sola' : 'tutte'}</option>
+                {uscite.map((u) => (
+                  <option key={u.codice} value={u.codice}>
+                    da {u.codice} ({u.tornei})
                   </option>
                 ))}
               </select>

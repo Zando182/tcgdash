@@ -129,12 +129,18 @@ richiede chiave. Per ogni torneo si scaricano le classifiche (chi giocava cosa) 
 accoppiamenti (chi ha battuto chi): incrociandoli si ricava partita per partita quale archetipo ha
 battuto quale. Dall'esterno arrivano solo i fatti, le percentuali le calcola la dashboard.
 
-Filtri: **dove si e' giocato** (online o dal vivo), formato, periodo, dimensione minima del
+Si scarica **solo lo Standard**: gli altri formati (GLC, Expanded, i Worlds storici) sono giochi
+diversi e i loro matchup non dicono niente qui.
+
+Filtri: **dove si e' giocato** (online o dal vivo), **espansione**, periodo, dimensione minima del
 torneo, e una soglia di partite minime sotto la quale un incrocio non viene mostrato — una
 percentuale su due partite e' rumore travestito da informazione.
 
-Il GLC non viene scaricato: mazzi monotipo e singleton sono un gioco diverso, e i suoi matchup non
-dicono niente sullo standard.
+L'espansione non arriva dall'API, che dice soltanto "Standard" — un'etichetta che cambia contenuto
+a ogni uscita. Si ricava dai codici dei set nelle liste, che arrivano gia' dentro le classifiche
+e non costano richieste in piu': un set che prima di una certa data non compare mai e dopo compare
+dappertutto e' uscito in quel momento. Serve pero' una finestra di dati larga: se si sono
+scaricati pochi giorni nessuna uscita e' visibile, il filtro resta spento e la pagina lo dice.
 
 Chi non ha consegnato la lista finisce sotto "Sconosciuto", che non e' un archetipo e resta fuori
 da classifiche e matchup; le partite cosi' escluse sono contate a parte. Online non capita quasi
@@ -143,6 +149,9 @@ mai, dal vivo succede spesso.
 I dati scaricati stanno in `data/metagame.json`, che non e' versionato: si riscarica. Lo scarico e'
 **incrementale** perche' l'API concede 50 richieste ogni 5 minuti e ogni torneo ne costa due: ogni
 giro aggiunge i tornei nuovi e si ferma prima di esaurire il credito, dicendo quanti ne restano.
+L'elenco viene anche **sfogliato**: cento tornei su Limitless sono appena una settimana, quindi
+ogni giro rilegge la prima pagina (dove compaiono i nuovi) e prosegue da dove era arrivato,
+allungando la copia all'indietro.
 
 Questa e' l'unica parte della dashboard che usa la rete, e serve il server locale: aperta da
 GitHub Pages mostra un avviso e nient'altro.

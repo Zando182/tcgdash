@@ -34,6 +34,8 @@ export type Torneo = {
   formato: string
   /** true online, false dal vivo, null se i dettagli non sono ancora arrivati. */
   online: boolean | null
+  /** Codici delle espansioni citate nelle liste del torneo. */
+  set?: string[]
   piattaforma: string
   organizzatore: string
   /** Indice archetipo (come stringa) -> quanti giocatori l'hanno portato. */
@@ -118,11 +120,75 @@ export async function aggiornaMetagame(): Promise<EsitoAggiornamento> {
 
 // ------------------------------------------------------------- aggregazioni
 
+/**
+ * Un'uscita che ha cambiato il pool di carte: un set assente da tutti i tornei
+ * fino a una certa data e poi presente in buona parte di quelli successivi.
+ */
+export type Espansione = {
+  /** Codice del set, es. "PBL". */
+  codice: string
+  /** Prima data in cui compare nei dati: la sua uscita, in pratica. */
+  dal: string
+  tornei: number
+}
+
+// Un set nuovo lo giocano quasi tutti; sotto questa quota e' un promo raro o
+// una carta di nicchia, non un'uscita che sposta il metagame.
+const QUOTA_MARCATORE = 0.25
+
+/**
+ * Le uscite riconoscibili nei dati.
+ *
+ * L'API non dice sotto quale pool di carte si sia giocato un torneo: dice solo
+ * "Standard", che cambia contenuto ogni volta che esce un set. Lo si ricava
+ * dalle liste: un set che prima di una certa data non compare mai e dopo
+ * compare dappertutto e' uscito in quel momento.
+ *
+ * Serve una finestra di dati abbastanza larga: se si sono scaricati pochi
+ * giorni, nessuna uscita e' visibile e l'elenco torna vuoto — vuol dire che
+ * tutti i tornei stanno nello stesso pool.
+ */
+export function espansioni(dati: DatiMetagame): Espansione[] {
+  const conSet = dati.tornei.filter((t) => (t.set?.length ?? 0) > 0)
+  if (conSet.length === 0) return []
+  const inizio = conSet.reduce((m, t) => (t.data < m ? t.data : m), conSet[0].data)
+
+  const prima = new Map<string, string>()
+  for (const t of conSet) {
+    for (const c of t.set ?? []) {
+      const p = prima.get(c)
+      if (!p || t.data < p) prima.set(c, t.data)
+    }
+  }
+
+  const fuori: Espansione[] = []
+  for (const [codice, dal] of prima) {
+    // Presente fin dal primo giorno di dati: fa parte del pool di fondo, non
+    // segna un confine.
+    if (dal <= inizio) continue
+    const dopo = conSet.filter((t) => t.data >= dal)
+    const conIl = dopo.filter((t) => (t.set ?? []).includes(codice)).length
+    if (dopo.length === 0 || conIl / dopo.length < QUOTA_MARCATORE) continue
+    fuori.push({ codice, dal, tornei: conIl })
+  }
+  return fuori.sort((a, b) => (a.dal < b.dal ? -1 : a.dal > b.dal ? 1 : 0))
+}
+
+/** L'ultima uscita gia' presente quando si e' giocato il torneo. */
+export function espansioneDi(t: Torneo, marcatori: Espansione[]): string {
+  let attuale = ''
+  for (const m of marcatori) {
+    if (t.data >= m.dal) attuale = m.codice
+  }
+  return attuale
+}
+
 /** Dove si e' giocato: tutti, solo online, solo dal vivo. */
 export type DoveGiocato = 'tutti' | 'online' | 'dalvivo'
 
 export type FiltriMeta = {
-  formato: string
+  /** Codice dell'espansione (vedi `espansioni`), vuoto = tutte. */
+  espansione: string
   dove: DoveGiocato
   dal: string
   al: string
@@ -131,7 +197,7 @@ export type FiltriMeta = {
 }
 
 export const FILTRI_META_VUOTI: FiltriMeta = {
-  formato: '',
+  espansione: '',
   dove: 'tutti',
   dal: '',
   al: '',
@@ -140,9 +206,10 @@ export const FILTRI_META_VUOTI: FiltriMeta = {
 
 /** Indici dei tornei che passano i filtri. */
 export function torneiFiltrati(dati: DatiMetagame, f: FiltriMeta): Set<number> {
+  const marcatori = f.espansione ? espansioni(dati) : []
   const dentro = new Set<number>()
   dati.tornei.forEach((t, i) => {
-    if (f.formato && t.formato !== f.formato) return
+    if (f.espansione && espansioneDi(t, marcatori) !== f.espansione) return
     // I tornei senza dettagli restano fuori da entrambi i filtri: non si sa
     // dove si siano giocati, e tirare a indovinare falserebbe i numeri.
     if (f.dove === 'online' && t.online !== true) return

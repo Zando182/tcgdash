@@ -47,9 +47,15 @@ CREDITO_MINIMO = 6
 # credito: si saltano.
 GIOCATORI_MINIMI = 16
 
-# Formati che non si scaricano proprio: il GLC e' un gioco diverso (mazzi
-# monotipo, singleton) e i suoi matchup non dicono niente sullo standard.
-FORMATI_ESCLUSI = {"GLC"}
+# L'elenco tornei restituisce 100 risultati per pagina, e cento tornei su
+# Limitless sono appena una settimana: senza sfogliare si resta fermi agli
+# ultimi giorni. Ogni pagina costa una richiesta.
+PER_PAGINA = 100
+PAGINE_PER_VOLTA = 3
+
+# Si segue solo lo Standard. Gli altri formati (GLC, Expanded, i Worlds
+# storici) sono giochi diversi e i loro matchup non dicono niente qui.
+FORMATO = "STANDARD"
 
 # Esiti registrati per ogni partita.
 VINCE_A, VINCE_B, PAREGGIO = 1, 2, 0
@@ -133,16 +139,42 @@ def _dettagli(torneo_id: str) -> tuple[dict, int]:
     return dati, rimaste
 
 
-def _partite_del_torneo(torneo_id: str) -> tuple[list[tuple[str, str, int]], dict[str, int], int]:
+def _set_della_lista(lista) -> set[str]:
     """
-    Le partite di un torneo come (archetipoA, archetipoB, esito), piu' quanti
-    giocatori ha portato ogni archetipo.
+    I codici delle espansioni citate in una lista.
+
+    L'API non dice sotto quale pool di carte si sia giocato un torneo: dice
+    solo "Standard", che cambia contenuto a ogni uscita. I codici dei set nelle
+    liste lo dicono invece per davvero, e le liste arrivano gia' dentro le
+    classifiche: non costa nessuna richiesta in piu'.
+    """
+    fuori: set[str] = set()
+    if not isinstance(lista, dict):
+        return fuori
+    for gruppo in lista.values():
+        if not isinstance(gruppo, list):
+            continue
+        for carta in gruppo:
+            if isinstance(carta, dict):
+                codice = (carta.get("set") or "").strip().upper()
+                if codice:
+                    fuori.add(codice)
+    return fuori
+
+
+def _partite_del_torneo(
+    torneo_id: str,
+) -> tuple[list[tuple[str, str, int]], dict[str, int], list[str], int]:
+    """
+    Le partite di un torneo come (archetipoA, archetipoB, esito), quanti
+    giocatori ha portato ogni archetipo, e le espansioni citate nelle liste.
     """
     classifica, _ = _chiama(f"tournaments/{torneo_id}/standings")
     accoppiamenti, rimaste = _chiama(f"tournaments/{torneo_id}/pairings")
 
     mazzo: dict[str, str] = {}
     conteggi: dict[str, int] = {}
+    set_visti: set[str] = set()
     for voce in classifica if isinstance(classifica, list) else []:
         giocatore = voce.get("player")
         if not giocatore:
@@ -150,6 +182,7 @@ def _partite_del_torneo(torneo_id: str) -> tuple[list[tuple[str, str, int]], dic
         nome = _nome_archetipo(voce)
         mazzo[giocatore] = nome
         conteggi[nome] = conteggi.get(nome, 0) + 1
+        set_visti |= _set_della_lista(voce.get("decklist"))
 
     partite: list[tuple[str, str, int]] = []
     for p in accoppiamenti if isinstance(accoppiamenti, list) else []:
@@ -176,7 +209,7 @@ def _partite_del_torneo(torneo_id: str) -> tuple[list[tuple[str, str, int]], dic
             continue
         partite.append((archA, archB, esito))
 
-    return partite, conteggi, rimaste
+    return partite, conteggi, sorted(set_visti), rimaste
 
 
 def _scarta_formati_esclusi(dati: dict) -> int:
@@ -190,7 +223,7 @@ def _scarta_formati_esclusi(dati: dict) -> int:
     tenuti: list[dict] = []
     nuovo_indice: dict[int, int] = {}
     for vecchio, t in enumerate(dati["tornei"]):
-        if (t.get("formato") or "") in FORMATI_ESCLUSI:
+        if (t.get("formato") or "") != FORMATO:
             continue
         nuovo_indice[vecchio] = len(tenuti)
         tenuti.append(t)
@@ -213,17 +246,26 @@ def _completa_dettagli(dati: dict, rimaste: int) -> tuple[int, int, bool]:
     """
     completati = 0
     for t in dati["tornei"]:
-        if t.get("online") is not None:
+        if t.get("online") is not None and t.get("set") is not None:
             continue
         if rimaste <= CREDITO_MINIMO:
             return completati, rimaste, True
         try:
-            dett, rimaste = _dettagli(t["id"])
+            if t.get("online") is None:
+                dett, rimaste = _dettagli(t["id"])
+                t["online"] = dett.get("isOnline")
+                t["piattaforma"] = dett.get("platform") or ""
+                t["organizzatore"] = ((dett.get("organizer") or {}).get("name") or "").strip()
+            if t.get("set") is None:
+                # Le espansioni stanno nelle liste, dentro le classifiche:
+                # va riletto quell'endpoint, non i dettagli.
+                classifica, rimaste = _chiama(f"tournaments/{t['id']}/standings")
+                visti: set[str] = set()
+                for voce in classifica if isinstance(classifica, list) else []:
+                    visti |= _set_della_lista(voce.get("decklist"))
+                t["set"] = sorted(visti)
         except LimiteRaggiunto:
             return completati, rimaste, True
-        t["online"] = dett.get("isOnline")
-        t["piattaforma"] = dett.get("platform") or ""
-        t["organizzatore"] = ((dett.get("organizer") or {}).get("name") or "").strip()
         completati += 1
         time.sleep(0.3)
     return completati, rimaste, False
@@ -241,13 +283,33 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
     scartati = _scarta_formati_esclusi(dati)
     gia_presi = {t["id"] for t in dati["tornei"]}
 
-    elenco, rimaste = _chiama("tournaments", {"game": GIOCO, "limit": 100})
+    # La pagina 1 si rilegge sempre (li' compaiono i tornei nuovi); poi si
+    # riprende a sfogliare da dove si era arrivati la volta scorsa, cosi' giro
+    # dopo giro la copia si allunga all'indietro invece di restare ferma agli
+    # ultimi giorni.
+    prossima = max(2, int(dati.get("prossimaPagina") or 2))
+    pagine = [1] + [prossima + i for i in range(PAGINE_PER_VOLTA - 1)]
 
-    # Prima si completano i tornei gia' in copia a cui manca il dato
+    elenco: list[dict] = []
+    rimaste = 999
+    fine_archivio = False
+    for numero in pagine:
+        pagina, rimaste = _chiama(
+            "tournaments", {"game": GIOCO, "limit": PER_PAGINA, "page": numero}
+        )
+        if not isinstance(pagina, list):
+            raise RuntimeError("Elenco tornei non valido.")
+        elenco.extend(pagina)
+        if len(pagina) < PER_PAGINA:
+            fine_archivio = True
+            break
+    # Finito l'archivio si riparte da capo: cosi' i giri successivi tornano a
+    # cercare solo i tornei nuovi in cima.
+    dati["prossimaPagina"] = 2 if fine_archivio else pagine[-1] + 1
+
+    # Poi si completano i tornei gia' in copia a cui manca il dato
     # online/dal vivo: senza, il filtro li lascerebbe fuori per sempre.
     completati, rimaste, fermato = _completa_dettagli(dati, rimaste)
-    if not isinstance(elenco, list):
-        raise RuntimeError("Elenco tornei non valido.")
 
     candidati = [
         t
@@ -255,7 +317,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
         if t.get("id")
         and t["id"] not in gia_presi
         and (t.get("players") or 0) >= giocatori_minimi
-        and (t.get("format") or "") not in FORMATI_ESCLUSI
+        and (t.get("format") or "") == FORMATO
     ]
 
     indice_arch = {nome: i for i, nome in enumerate(dati["archetipi"])}
@@ -277,7 +339,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
             break
         try:
             dett, rimaste = _dettagli(t["id"])
-            partite, conteggi, rimaste = _partite_del_torneo(t["id"])
+            partite, conteggi, espansioni, rimaste = _partite_del_torneo(t["id"])
         except LimiteRaggiunto:
             fermato_dal_limite = True
             break
@@ -295,6 +357,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
                 "online": dett.get("isOnline"),
                 "piattaforma": dett.get("platform") or "",
                 "organizzatore": ((dett.get("organizer") or {}).get("name") or "").strip(),
+                "set": espansioni,
                 "conteggi": {str(idx(n)): c for n, c in conteggi.items()},
             }
         )
@@ -319,6 +382,7 @@ def aggiorna(max_tornei: int = TORNEI_PER_VOLTA, giocatori_minimi: int = GIOCATO
         "partite": len(dati["partite"]),
         "archetipi": len(dati["archetipi"]),
         "aggiornato": dati["aggiornato"],
+        "prossimaPagina": dati["prossimaPagina"],
     }
 
 
