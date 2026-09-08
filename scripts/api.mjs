@@ -19,6 +19,7 @@ const CORPO_MASSIMO = 8 * 1024 * 1024
 
 export function creaApiExcel({ root }) {
   const script = resolve(root, 'scripts', 'excel_db.py')
+  const scriptMetagame = resolve(root, 'scripts', 'metagame.py')
   // Il primo interprete che parte davvero viene ricordato: cercarlo a ogni
   // richiesta costerebbe due processi falliti per volta.
   let interprete = null
@@ -48,14 +49,18 @@ export function creaApiExcel({ root }) {
       }
     })
 
-  /** Esegue un comando di excel_db.py e restituisce { stato, corpo }. */
-  async function esegui(comando, stdin) {
+  /**
+   * Esegue un comando Python e restituisce { stato, corpo }.
+   * `argomenti` sono quelli dopo il nome dello script.
+   */
+  async function esegui(comando, stdin, quale = script) {
     const candidati = interprete ? [interprete] : INTERPRETI
     let ultimo = null
+    const argomenti = Array.isArray(comando) ? comando : [comando]
 
     for (const cmd of candidati) {
       try {
-        const { code, out, err } = await lancia(cmd, [script, comando], stdin)
+        const { code, out, err } = await lancia(cmd, [quale, ...argomenti], stdin)
         interprete = cmd
         let corpo
         try {
@@ -64,7 +69,7 @@ export function creaApiExcel({ root }) {
           return {
             stato: 500,
             corpo: {
-              errore: `Risposta non leggibile da ${comando}.`,
+              errore: `Risposta non leggibile da ${argomenti.join(' ')}.`,
               dettaglio: (err || out).trim().split('\n').slice(-3).join('\n'),
             },
           }
@@ -117,7 +122,7 @@ export function creaApiExcel({ root }) {
    */
   return async function gestisci(req, res) {
     const url = (req.url ?? '/').split('?')[0]
-    if (!url.startsWith('/api/excel/')) return false
+    if (!url.startsWith('/api/excel/') && !url.startsWith('/api/metagame/')) return false
 
     try {
       if (url === '/api/excel/stato' && req.method === 'GET') {
@@ -135,6 +140,27 @@ export function creaApiExcel({ root }) {
       if (url === '/api/excel/registro' && req.method === 'PUT') {
         const corpoRichiesta = await leggiCorpo(req)
         const { stato, corpo } = await esegui('scrivi', corpoRichiesta)
+        rispondi(res, stato, corpo)
+        return true
+      }
+
+      // ---- metagame: dati pubblici dei tornei online Limitless ----
+      if (url === '/api/metagame/stato' && req.method === 'GET') {
+        const { stato, corpo } = await esegui('stato', undefined, scriptMetagame)
+        rispondi(res, stato === 409 ? 200 : stato, corpo)
+        return true
+      }
+
+      if (url === '/api/metagame/dati' && req.method === 'GET') {
+        const { stato, corpo } = await esegui('dati', undefined, scriptMetagame)
+        rispondi(res, stato, corpo)
+        return true
+      }
+
+      if (url === '/api/metagame/aggiorna' && req.method === 'POST') {
+        // Puo' durare parecchio: e' un download di decine di tornei, uno
+        // alla volta per non superare il limite dell'API.
+        const { stato, corpo } = await esegui('aggiorna', undefined, scriptMetagame)
         rispondi(res, stato, corpo)
         return true
       }

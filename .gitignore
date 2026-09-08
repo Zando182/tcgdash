@@ -6,6 +6,7 @@ dist
 *.tsbuildinfo
 ~$*.xlsx
 data/backup/
+data/metagame.json
 data/*.tmp
 *.xlsx.tmp
 .DS_Store

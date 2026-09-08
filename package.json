@@ -13,7 +13,9 @@
     "serve": "node scripts/serve.mjs",
     "start": "npm run build && node scripts/serve.mjs",
     "db": "node scripts/py.mjs excel_db.py stato",
-    "db:pulisci": "node scripts/py.mjs excel_db.py pulisci"
+    "db:pulisci": "node scripts/py.mjs excel_db.py pulisci",
+    "meta": "node scripts/py.mjs metagame.py stato",
+    "meta:aggiorna": "node scripts/py.mjs metagame.py aggiorna"
   },
   "dependencies": {
     "react": "^19.1.0",

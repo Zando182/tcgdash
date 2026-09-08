@@ -1729,6 +1729,49 @@
    ],
    "torneo": "TCGLive",
    "note": ""
+  },
+  {
+   "id": "xlsx-121",
+   "data": "2026-09-02",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-122",
+   "data": "2026-09-02",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-123",
+   "data": "2026-09-02",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex",
+   "decklist": "Dragapult v1",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [
+    "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
   }
  ]
 }
