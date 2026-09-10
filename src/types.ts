@@ -39,6 +39,35 @@ export type Lista = {
   testo: string
 }
 
+/** Le tipologie di torneo. Solo l'amichevole non ha un piazzamento. */
+export const TIPOLOGIE = ['Local', 'Challenge', 'Sfida di lega', 'Amichevole'] as const
+export type Tipologia = (typeof TIPOLOGIE)[number]
+
+export const PIAZZAMENTI = ['Vittoria', 'Finale', 'Top 4', 'Top 8', 'Altro'] as const
+export type Piazzamento = (typeof PIAZZAMENTI)[number]
+
+/**
+ * Un round al meglio di tre contro lo stesso mazzo.
+ * `partite` ha da 0 a 3 esiti: il risultato del round si ricava da qui.
+ */
+export type Round = {
+  avversario: string
+  partite: Esito[]
+}
+
+export type TorneoMio = {
+  id: string
+  data: string
+  formato: string
+  deck: string
+  decklist: string
+  /** Una delle TIPOLOGIE; stringa libera per non perdere cio' che si scrive a mano nel foglio. */
+  tipologia: string
+  /** Assente in amichevole. */
+  piazzamento: Piazzamento | null
+  round: Round[]
+}
+
 /** Elenchi dei valori gia' usati: alimentano i menu a tendina del form. */
 export type Liste = {
   deck: string[]
@@ -56,6 +85,8 @@ export type Seed = {
   match: Match[]
   /** Assente nei seed generati prima che esistessero le liste salvate. */
   decklist?: Lista[]
+  /** Assente nei seed generati prima che esistessero i tornei. */
+  tornei?: TorneoMio[]
 }
 
 /** Le dimensioni su cui si puo' filtrare e spezzare il winrate. */

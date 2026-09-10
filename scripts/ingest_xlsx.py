@@ -44,6 +44,7 @@ def main() -> int:
         "generatoIl": datetime.now().date().isoformat(),
         "liste": dati["liste"],
         "decklist": dati["decklist"],
+        "tornei": dati["tornei"],
         "match": match,
     }
     USCITA.parent.mkdir(parents=True, exist_ok=True)
@@ -55,7 +56,7 @@ def main() -> int:
         f"  {len(match)} match, {vinte}V/{len(match) - vinte}S ({vinte / len(match):.1%}), "
         f"{len(seed['liste']['deck'])} deck, {len(seed['liste']['avversario'])} avversari, "
         f"{sum(1 for m in match if m['note'])} note, "
-        f"{len(dati['decklist'])} liste"
+        f"{len(dati['decklist'])} liste, {len(dati['tornei'])} tornei"
         + (f", {dati['scartate']} righe incomplete ignorate" if dati["scartate"] else "")
     )
     return 0

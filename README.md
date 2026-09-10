@@ -85,6 +85,8 @@ Il file e' passato da **428 KB a 53 KB**. I fogli rimasti sono tutti dati, nessu
 - **Match** — la tabella delle partite, invariata: stesse colonne, stesse formule, stessa
   formattazione condizionale, stesse tendine.
 - **Decklist** — il testo delle liste salvate dalla pagina Liste. Creato al primo salvataggio.
+- **Tornei** — i tornei, una riga per round con i dati del torneo ripetuti: si legge e si filtra
+  in Excel come una tabella qualsiasi. Creato al primo torneo salvato.
 - **Liste** (nascosto) — la sorgente delle tendine di Match. Non e' un'elaborazione: senza, i
   menu a discesa del foglio si romperebbero. Viene rigenerato a ogni scrittura, quindi contiene
   sempre anche i mazzi e gli avversari aggiunti dal sito.
@@ -113,6 +115,7 @@ la serie di vittorie o sconfitte in corso, i tag e la ricerca nelle note.
 | Pagina | A cosa serve |
 | --- | --- |
 | **Inserisci** | Il form per registrare un match e il registro completo, con modifica, duplica ed elimina. I campi che cambiano di rado (espansione, mazzo, lista, torneo) si ricordano dell'ultima partita: in una sessione di ladder cambi solo avversario, turno ed esito. |
+| **Inserisci torneo** | Un torneo intero: data, espansione, mazzo, lista, tipologia (Local, Challenge, Sfida di lega, Amichevole), piazzamento (Vittoria, Finale, Top 4, Top 8, Altro — non in amichevole) e un numero a scelta di round. Ogni round e' al meglio di tre contro lo stesso mazzo: si segnano le singole partite, il risultato del round si calcola da solo. Sotto, tutti i tornei salvati con modifica ed eliminazione. |
 | **Panoramica** | Winrate, split 1°/2°, serie in corso, andamento settimanale, confronto fra i tuoi mazzi, avversari piu' incontrati, tag, e gli ultimi match con le note per esteso. |
 | **Matchup** | La matrice matchup, con righe e colonne a scelta. Il colore va dal rosso al verde e si accende con le partite giocate. Un puntino ambra segnala che su quel matchup ci sono note. |
 | **Note** | Il playbook: ogni nota scritta nei match, raggruppata per matchup (o per avversario, per mazzo, in ordine di data), con ricerca ed evidenziazione. In fondo, gli avversari incontrati piu' volte su cui non hai ancora scritto niente. |
@@ -155,6 +158,19 @@ allungando la copia all'indietro.
 
 Questa e' l'unica parte della dashboard che usa la rete, e serve il server locale: aperta da
 GitHub Pages mostra un avviso e nient'altro.
+
+### I tornei nelle statistiche
+
+Il risultato di un round si ricava dalle partite: vince chi ne ha vinte di piu'. 2-0 e 2-1 sono
+vittoria, 0-2 e 1-2 sconfitta, 1-1 pareggio (il tempo e' finito prima della terza). Un 1-0 a tempo
+scaduto va a chi e' avanti, come nel regolamento. La terza partita si apre solo sull'1-1, e se si
+corregge una delle prime due in modo che non lo sia piu' si svuota da sola.
+
+Ogni partita di ogni round entra anche nelle statistiche, come un match singolo contro il mazzo di
+quel round, con la tipologia del torneo nella colonna Torneo: winrate, matchup e panoramica le
+contano insieme alle altre, e il filtro **Torneo** le separa (per esempio: solo i Challenge). Nel
+foglio Match pero' non ci sono: stanno solo nel foglio Tornei, altrimenti sarebbero contate due
+volte. Chi inizia nelle singole partite di un BO3 non si registra.
 
 ### Come si leggono i numeri
 

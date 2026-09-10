@@ -16,6 +16,8 @@ import { Section, Stat } from './ui'
 export function DatiView() {
   const {
     match,
+    decklist,
+    tornei,
     extra,
     modo,
     excel,
@@ -35,15 +37,29 @@ export function DatiView() {
   const [esito, setEsito] = useState<{ ok: boolean; testo: string } | null>(null)
   const [confermaReset, setConfermaReset] = useState(false)
 
+  // Il backup deve contenere tutto: prima c'erano solo i match, e un import
+  // successivo avrebbe cancellato liste e tornei.
   const esportaJson = () =>
-    scarica(nomeFile('json'), JSON.stringify({ match, extra }, null, 1), 'application/json')
+    scarica(
+      nomeFile('json'),
+      JSON.stringify({ match, decklist, tornei, extra }, null, 1),
+      'application/json',
+    )
 
   const esportaCsv = () => scarica(nomeFile('csv'), matchInCsv(match), 'text/csv')
 
   const importa = async (f: File) => {
     try {
-      const registro = leggiRegistro(await f.text())
-      sostituisci(registro)
+      const testo = await f.text()
+      const registro = leggiRegistro(testo)
+      // Un file che non ha la sezione liste o tornei (i backup fatti prima che
+      // esistessero) non deve azzerarle: si tengono quelle che ci sono.
+      const grezzo = JSON.parse(testo) as { decklist?: unknown; tornei?: unknown }
+      sostituisci({
+        ...registro,
+        decklist: Array.isArray(grezzo.decklist) ? registro.decklist : decklist,
+        tornei: Array.isArray(grezzo.tornei) ? registro.tornei : tornei,
+      })
       setEsito({ ok: true, testo: `Importati ${registro.match.length} match da ${f.name}.` })
     } catch (e) {
       setEsito({ ok: false, testo: e instanceof Error ? e.message : 'File non leggibile.' })

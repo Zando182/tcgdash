@@ -1,4 +1,4 @@
-import type { Lista, Liste, Match } from '../types'
+import type { Lista, Liste, Match, TorneoMio } from '../types'
 
 /**
  * Cliente dell'API locale che usa il workbook Excel come database.
@@ -26,6 +26,7 @@ export type EsitoScrittura = {
   scritti: number
   /** null quando la scrittura non ha toccato il foglio delle liste. */
   listeScritte: number | null
+  torneiScritti: number | null
   rimosse: number
   formuleAggiunte: number
   backup: string
@@ -56,19 +57,28 @@ export async function statoExcel(): Promise<StatoExcel | null> {
   }
 }
 
-export async function leggiDaExcel(): Promise<{ match: Match[]; liste: Liste; decklist: Lista[] }> {
+export async function leggiDaExcel(): Promise<{
+  match: Match[]
+  liste: Liste
+  decklist: Lista[]
+  tornei: TorneoMio[]
+}> {
   const r = await fetch(`${BASE}/registro`, { headers: { Accept: 'application/json' } })
   const corpo = await r.json().catch(() => null)
   if (!r.ok) throw new Error(messaggio(corpo, `Lettura fallita (${r.status}).`))
-  const dati = corpo as { match: Match[]; liste: Liste; decklist?: Lista[] }
-  return { ...dati, decklist: dati.decklist ?? [] }
+  const dati = corpo as { match: Match[]; liste: Liste; decklist?: Lista[]; tornei?: TorneoMio[] }
+  return { ...dati, decklist: dati.decklist ?? [], tornei: dati.tornei ?? [] }
 }
 
-export async function scriviSuExcel(match: Match[], decklist: Lista[]): Promise<EsitoScrittura> {
+export async function scriviSuExcel(
+  match: Match[],
+  decklist: Lista[],
+  tornei: TorneoMio[],
+): Promise<EsitoScrittura> {
   const r = await fetch(`${BASE}/registro`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ match, decklist }),
+    body: JSON.stringify({ match, decklist, tornei }),
   })
   const corpo = await r.json().catch(() => null)
   if (!r.ok) throw new Error(messaggio(corpo, `Scrittura fallita (${r.status}).`))

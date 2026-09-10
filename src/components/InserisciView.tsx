@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { dataIt, oggiIso } from '../lib/format'
 import { applicaFiltri } from '../lib/stats'
 import { useFiltri } from '../store/useFiltri'
-import { liste, useRegistro } from '../store/useMatch'
+import { liste, useRegistro, useTutteLePartite } from '../store/useMatch'
 import type { Esito, Match, Turno } from '../types'
 import { BarraFiltri } from './BarraFiltri'
 import { CampoConElenco, Section, Vuoto } from './ui'
@@ -29,7 +29,9 @@ function bozzaVuota(ultimo?: Match): Bozza {
 export function InserisciView() {
   const { match, extra, aggiungi, modifica, elimina, duplica } = useRegistro()
   const { filtri } = useFiltri()
-  const elenchi = useMemo(() => liste(match, extra), [match, extra])
+  // I suggerimenti comprendono anche mazzi e avversari incontrati nei tornei.
+  const tutte = useTutteLePartite()
+  const elenchi = useMemo(() => liste(tutte, extra), [tutte, extra])
 
   const [bozza, setBozza] = useState<Bozza>(() => bozzaVuota(match[0]))
   const [inModifica, setInModifica] = useState<string | null>(null)
@@ -258,7 +260,7 @@ export function InserisciView() {
 
       <Section
         title="Registro match"
-        hint="Ordinato dal piu' recente. La riga si apre per modificare, duplicare o eliminare."
+        hint="Ordinato dal piu' recente. Le partite dei tornei non sono qui: si modificano da Inserisci torneo."
         right={
           <span className="text-[11px] text-ink-400">
             {filtrati.length} di {match.length} match

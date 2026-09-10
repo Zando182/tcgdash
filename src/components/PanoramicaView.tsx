@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import { dataIt, pct } from '../lib/format'
-import { andamentoSettimanale, confronta, raggruppa, riepiloga, settimaneComplete } from '../lib/stats'
+import {
+  andamentoSettimanale,
+  confronta,
+  filtriAttivi,
+  raggruppa,
+  riepiloga,
+  settimaneComplete,
+} from '../lib/stats'
 import { useFiltri } from '../store/useFiltri'
 import type { Match } from '../types'
 import { BarreWinrate, Ciambella, GraficoAndamento, GraficoVolume } from './charts'
@@ -40,7 +47,9 @@ export function PanoramicaView({ match }: { match: Match[] }) {
           label="Winrate"
           value={pct(r.winrate)}
           tone={r.winrate !== null && r.winrate >= 0.55 ? 'good' : r.winrate !== null && r.winrate < 0.45 ? 'bad' : 'default'}
-          sub={filtri.deck.length || filtri.avversario.length ? 'sul filtro attivo' : 'su tutto il registro'}
+          // Qualunque filtro, non solo mazzo o avversario: con il filtro Torneo
+          // (per esempio solo i Challenge) il numero non e' piu' quello di tutto il registro.
+          sub={filtriAttivi(filtri) > 0 ? 'sul filtro attivo' : 'su tutto il registro'}
         />
         <Stat
           label="Da 1° (inizio io)"

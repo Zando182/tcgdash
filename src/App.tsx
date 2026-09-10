@@ -7,12 +7,13 @@ import { MatchupView } from './components/MatchupView'
 import { MetagameView } from './components/MetagameView'
 import { NoteView } from './components/NoteView'
 import { PanoramicaView } from './components/PanoramicaView'
+import { TorneoView } from './components/TorneoView'
 import { pct } from './lib/format'
 import { applicaFiltri, riepiloga } from './lib/stats'
 import { useFiltri } from './store/useFiltri'
-import { useRegistro } from './store/useMatch'
+import { useRegistro, useTutteLePartite } from './store/useMatch'
 
-type Pagina = 'inserisci' | 'panoramica' | 'matchup' | 'note' | 'liste' | 'dati' | 'metagame'
+type Pagina = 'inserisci' | 'torneo' | 'panoramica' | 'matchup' | 'note' | 'liste' | 'dati' | 'metagame'
 type Sezione = 'mia' | 'metagame'
 
 type VoceSezione = {
@@ -32,6 +33,7 @@ const SEZIONI: VoceSezione[] = [
     etichetta: 'La mia Dashboard',
     pagine: [
       { id: 'inserisci', etichetta: 'Inserisci', icona: '✍️' },
+      { id: 'torneo', etichetta: 'Inserisci torneo', icona: '🏆' },
       { id: 'panoramica', etichetta: 'Panoramica', icona: '📊' },
       { id: 'matchup', etichetta: 'Matchup', icona: '🧩' },
       { id: 'note', etichetta: 'Note', icona: '📝' },
@@ -53,8 +55,10 @@ const PAGINE = SEZIONI.flatMap((s) => s.pagine.map((p) => ({ ...p, sezione: s.id
 const CON_FILTRI: Pagina[] = ['panoramica', 'matchup', 'note']
 
 export default function App() {
-  const { match, salvataggioAttivo, modo, caricamento, erroreExcel, riprovaSalvataggio, inizializza } =
+  const { salvataggioAttivo, modo, caricamento, erroreExcel, riprovaSalvataggio, inizializza } =
     useRegistro()
+  // Le statistiche contano anche le partite dei tornei, sciolte in match singoli.
+  const match = useTutteLePartite()
   const { filtri } = useFiltri()
   const [pagina, setPagina] = useState<Pagina>(leggiHash())
 
@@ -206,6 +210,7 @@ export default function App() {
         {CON_FILTRI.includes(pagina) && <BarraFiltri match={match} />}
 
         {pagina === 'inserisci' && <InserisciView />}
+        {pagina === 'torneo' && <TorneoView />}
         {pagina === 'panoramica' && <PanoramicaView match={filtrati} />}
         {pagina === 'matchup' && <MatchupView match={filtrati} />}
         {pagina === 'note' && <NoteView match={filtrati} />}

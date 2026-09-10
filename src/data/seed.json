@@ -1,15 +1,19 @@
 {
  "generatoDa": "TCG_Match.xlsx",
- "generatoIl": "2026-09-02",
+ "generatoIl": "2026-09-10",
  "liste": {
   "deck": [
+   "Alakazam Dusknoir",
    "Area Della Festa",
+   "Basic Box",
    "Dragapult ex",
    "Dragapult ex Blaziken ex",
+   "Dragapult ex Dusknoir",
    "Grimmsnarl ex Froslass",
    "Ragingbolt ex Ogerpon ex"
   ],
   "decklist": [
+   "BB v1",
    "Bolt v1",
    "Dragapolli v1",
    "Dragapolli v2",
@@ -17,7 +21,9 @@
    "Dragapult v1",
    "Dragapult v2",
    "Grimmsnarl v1",
-   "Mele v1"
+   "Mele v1",
+   "PultNoir v1",
+   "ZamNoir"
   ],
   "formato": [
    "TEF-PBL"
@@ -28,6 +34,7 @@
    "Area Della Festa",
    "Bronzong Dusknoir",
    "Clafairy ex",
+   "Crusle",
    "Dhelmise Banette",
    "Doublade",
    "Dragapult ex",
@@ -44,13 +51,18 @@
    "MegaExcadrill ex",
    "MegaFroslass ex Chandelure",
    "MegaGreninja ex Blaziken",
+   "MegaGreninja ex Drakloak",
+   "MegaGreninja ex Dudunsparce",
    "MegaKangaskhan ex Bouffalant",
    "MegaLopunny ex",
    "MegaLucario ex",
+   "MegaMagnetric ex Eelektrik",
+   "MegaSharpedo ex",
    "MegaStarmie ex Dragapult",
    "MegaStarmie ex Dusknoir",
    "Metagross ex",
    "Mewtwo ex Spidops",
+   "Pikachu ex box",
    "Raging Bolt",
    "Slowking",
    "Spineferree ex Bastiodon",
@@ -76,7 +88,23 @@
    "Unlucky"
   ]
  },
- "decklist": [],
+ "decklist": [
+  {
+   "id": "lista-001",
+   "nome": "BB v1",
+   "mazzo": "Basic Box",
+   "aggiornata": "2026-09-06",
+   "testo": "Pokémon: 12\n3 Meowth ex POR 62\n2 Mega Kangaskhan ex MEG 104\n2 Latias ex SSP 76\n2 Lillie's Clefairy ex JTG 56\n2 Teal Mask Ogerpon ex TWM 25\n2 Wellspring Mask Ogerpon ex TWM 64\n1 Iron Leaves ex TEF 25\n1 Chien-Pao SSP 56\n1 Fezandipiti ex ASC 142\n1 Paldean Tauros SSP 18\n1 Pecharunt PR-SV 149\n1 Moltres PFL 14\n\nCarte Allenatore: 12\n4 Crispin SCR 133\n3 Boss's Orders MEG 114\n2 Cyrano SSP 170\n2 Ciphermaniac's Codebreaking TEF 145\n1 Brock's Scouting JTG 146\n4 Ultra Ball MEG 131\n4 Energy Switch MEG 115\n2 Night Stretcher ASC 196\n1 Tool Scrapper ASC 212\n1 Unfair Stamp TWM 165\n2 Lillie's Pearl JTG 151\n3 Area Zero Underdepths SCR 131\n\nEnergia: 5\n5 Basic {G} Energy MEE 1\n3 Prism Energy ASC 216\n2 Basic {P} Energy MEE 5\n1 Basic {W} Energy MEE 3\n1 Basic {R} Energy MEE 2\n\nTotale carte: 60"
+  },
+  {
+   "id": "lista-002",
+   "nome": "PultNoir v1",
+   "mazzo": "Dragapult ex Dusknoir",
+   "aggiornata": "2026-09-05",
+   "testo": "Pokémon: 11\n1 Meowth ex POR 62\n1 Dusknoir PRE 37\n4 Drakloak TWM 129\n4 Dreepy TWM 128\n1 Munkidori TWM 95\n3 Dragapult ex TWM 130\n2 Duskull PRE 35\n1 Fezandipiti ex ASC 142\n2 Dusclops PRE 36\n2 Budew ASC 16\n1 Moltres PFL 14\n\nCarte Allenatore: 12\n3 Night Stretcher ASC 196\n2 Crispin SCR 133\n4 Buddy-Buddy Poffin TEF 144\n4 Lillie's Determination MEG 119\n1 Jamming Tower ASC 261\n1 Rosa's Encouragement POR 84\n4 Poké Pad POR 81\n3 Boss's Orders MEG 114\n3 Crushing Hammer POR 71\n3 Ultra Ball MEG 131\n1 Unfair Stamp TWM 165\n1 Dawn PFL 118\n\nEnergia: 3\n3 Basic {P} Energy MEE 5\n2 Basic {D} Energy MEE 7\n3 Basic {R} Energy MEE 2\n\nTotale carte: 60"
+  }
+ ],
+ "tornei": [],
  "match": [
   {
    "id": "xlsx-001",
@@ -1769,6 +1797,504 @@
    "risultato": "L",
    "tag": [
     "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-124",
+   "data": "2026-09-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "PultNoir v1",
+   "avversario": "MegaGreninja ex Dudunsparce",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Luck"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-125",
+   "data": "2026-09-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "PultNoir v1",
+   "avversario": "MegaGreninja ex Drakloak",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-126",
+   "data": "2026-09-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "PultNoir v1",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-127",
+   "data": "2026-09-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "PultNoir v1",
+   "avversario": "MegaGreninja ex Blaziken",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-128",
+   "data": "2026-09-05",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "PultNoir v1",
+   "avversario": "MegaSharpedo ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Boss su toxtricity per guadagnare tempo sui brutti start"
+  },
+  {
+   "id": "xlsx-129",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Area Della Festa",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-130",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Area Della Festa",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-131",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Crusle",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-132",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Alakazam Dudunsparce",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-133",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-134",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-135",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "MegaGreninja ex Drakloak",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-136",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex Dusknoir",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-137",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Slowking",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "Esplodi su quello che sta cercando di caricare e vai di budew"
+  },
+  {
+   "id": "xlsx-138",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Basic Box",
+   "decklist": "BB v1",
+   "avversario": "Slowking",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-139",
+   "data": "2026-09-06",
+   "formato": "TEF-PBL",
+   "deck": "Basic Box",
+   "decklist": "BB v1",
+   "avversario": "Dragapult ex Dusknoir",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "forte peach su fez"
+  },
+  {
+   "id": "xlsx-140",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Garchomp ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-141",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Pikachu ex box",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-142",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Raging Bolt",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-143",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-144",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-145",
+   "data": "2026-09-07",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Slowking",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-146",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "MegaExcadrill ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-147",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-148",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-149",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Area Della Festa",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-150",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex",
+   "turno": 1,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-151",
+   "data": "2026-09-08",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Toxtricity box",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-152",
+   "data": "2026-09-09",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "MegaMagnetric ex Eelektrik",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Bad Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-153",
+   "data": "2026-09-09",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dragapult ex Blaziken ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Opening"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-154",
+   "data": "2026-09-09",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Slowking",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [
+    "Bad Start"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-155",
+   "data": "2026-09-09",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Zoroark ex",
+   "turno": 1,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-156",
+   "data": "2026-09-09",
+   "formato": "TEF-PBL",
+   "deck": "Alakazam Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "MegaLucario ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": "ha troppa vita avendo l'energia"
+  },
+  {
+   "id": "xlsx-157",
+   "data": "2026-09-10",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Area Della Festa",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-158",
+   "data": "2026-09-10",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Dhelmise Banette",
+   "turno": 2,
+   "risultato": "W",
+   "tag": [
+    "Lucky Win"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-159",
+   "data": "2026-09-10",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "Area Della Festa",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Draw"
+   ],
+   "torneo": "TCGLive",
+   "note": ""
+  },
+  {
+   "id": "xlsx-160",
+   "data": "2026-09-10",
+   "formato": "TEF-PBL",
+   "deck": "Dragapult ex Dusknoir",
+   "decklist": "ZamNoir",
+   "avversario": "MegaLopunny ex",
+   "turno": 2,
+   "risultato": "L",
+   "tag": [
+    "Bad Start",
+    "Bad Luck"
    ],
    "torneo": "TCGLive",
    "note": ""

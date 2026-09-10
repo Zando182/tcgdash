@@ -38,11 +38,38 @@ NOME_WORKBOOK = "TCG_Match.xlsx"
 FOGLIO_DATI = "Match"
 FOGLIO_LISTE = "Liste"
 FOGLIO_DECKLIST = "Decklist"
+FOGLIO_TORNEI = "Tornei"
 
 # Fogli tenuti dal workbook-database. Tutto il resto (Dashboard, Matrice
 # Matchup, le schede per deck, Leggimi) sono elaborazioni che la dashboard
 # rifa' meglio, e vengono eliminate da pulisci().
-FOGLI_DA_TENERE = {FOGLIO_DATI, FOGLIO_LISTE, FOGLIO_DECKLIST}
+FOGLI_DA_TENERE = {FOGLIO_DATI, FOGLIO_LISTE, FOGLIO_DECKLIST, FOGLIO_TORNEI}
+
+# Foglio Tornei: una riga per round, con i dati del torneo ripetuti su ogni
+# riga. Ripetere e' meno elegante di due tabelle collegate, ma e' una tabella
+# sola che si legge, si filtra e si ordina in Excel senza sapere niente di
+# chiavi esterne. La colonna ID tiene insieme i round dello stesso torneo.
+COLONNE_TORNEI = {
+    "A": "id",
+    "B": "data",
+    "C": "tipologia",
+    "D": "formato",
+    "E": "deck",
+    "F": "decklist",
+    "G": "piazzamento",
+    "H": "round",
+    "I": "avversario",
+    "J": "g1",
+    "K": "g2",
+    "L": "g3",
+    "M": "risultato",
+}
+INTESTAZIONI_TORNEI = [
+    "ID", "Data", "Tipologia", "Formato", "Mazzo", "Lista", "Piazzamento",
+    "Round", "Mazzo avversario", "G1", "G2", "G3", "Risultato round",
+]
+TIPOLOGIE = ("Local", "Challenge", "Sfida di lega", "Amichevole")
+PIAZZAMENTI = ("Vittoria", "Finale", "Top 4", "Top 8", "Altro")
 
 # Colonne del foglio Decklist: il testo della lista incollato dal sito.
 # E' un dato come i match, non un'elaborazione, quindi vive nel workbook e
@@ -230,6 +257,7 @@ def leggi(percorso: Path) -> dict:
 
     return {
         "decklist": _leggi_decklist(wb),
+        "tornei": _leggi_tornei(wb),
         "file": percorso.name,
         "intestazioni": intestazioni,
         "scartate": scartate,
@@ -274,6 +302,88 @@ def _leggi_decklist(wb) -> list[dict]:
                 "testo": corpo,
             }
         )
+    return fuori
+
+
+def _canonico(valore: str, ammessi: tuple[str, ...]) -> str:
+    """Il valore ammesso che corrisponde, ignorando maiuscole; altrimenti quello scritto."""
+    chiave = normalizza(valore)
+    for a in ammessi:
+        if normalizza(a) == chiave:
+            return a
+    return valore
+
+
+def _esito_partita(v) -> str:
+    """W o L. Accetta anche V/S, per chi compila il foglio a mano in italiano."""
+    c = testo(v).upper()[:1]
+    return {"W": "W", "V": "W", "L": "L", "S": "L"}.get(c, "")
+
+
+def esito_round(partite: list[str]) -> str:
+    """
+    Il risultato di un round al meglio di tre, dalle singole partite.
+
+    Vince chi ha piu' partite vinte: 2-0 e 2-1 sono vittoria, 0-2 e 1-2
+    sconfitta, 1-1 pareggio (il tempo e' finito prima della terza). Un 1-0 a
+    tempo scaduto va a chi e' avanti, come nel regolamento Pokemon.
+    """
+    vinte = sum(1 for p in partite if p == "W")
+    perse = sum(1 for p in partite if p == "L")
+    if vinte == perse == 0:
+        return ""
+    if vinte > perse:
+        return "Vittoria"
+    if perse > vinte:
+        return "Sconfitta"
+    return "Pareggio"
+
+
+def _leggi_tornei(wb) -> list[dict]:
+    """I tornei dal foglio Tornei, raggruppando i round per ID."""
+    if FOGLIO_TORNEI not in wb.sheetnames:
+        return []
+    ws = wb[FOGLIO_TORNEI]
+    per_id: dict[str, dict] = {}
+    for riga in range(PRIMA_RIGA, ws.max_row + 1):
+        val = {campo: ws[f"{col}{riga}"].value for col, campo in COLONNE_TORNEI.items()}
+        ident = testo(val["id"])
+        deck = testo(val["deck"])
+        if not ident and not deck:
+            continue
+        # Una riga senza ID (aggiunta a mano) diventa un torneo a se'.
+        ident = ident or f"xlsx-t{riga}"
+        t = per_id.get(ident)
+        if t is None:
+            tipologia = _canonico(testo(val["tipologia"]), TIPOLOGIE) or "Local"
+            piazzamento = _canonico(testo(val["piazzamento"]), PIAZZAMENTI) or None
+            t = per_id[ident] = {
+                "id": ident,
+                "data": iso_data(val["data"]),
+                "tipologia": tipologia,
+                "formato": testo(val["formato"]),
+                "deck": deck,
+                "decklist": testo(val["decklist"]),
+                # In amichevole non ci si piazza: il campo si ignora anche se
+                # nel foglio c'e' scritto qualcosa.
+                "piazzamento": None if tipologia == "Amichevole" else piazzamento,
+                "round": [],
+            }
+        partite = [e for e in (_esito_partita(val[g]) for g in ("g1", "g2", "g3")) if e]
+        avversario = testo(val["avversario"])
+        if avversario or partite:
+            numero = val["round"]
+            try:
+                numero = int(numero)
+            except (TypeError, ValueError):
+                numero = len(t["round"]) + 1
+            t["round"].append({"n": numero, "avversario": avversario, "partite": partite})
+
+    fuori = list(per_id.values())
+    for t in fuori:
+        t["round"].sort(key=lambda r: r["n"])
+        for r in t["round"]:
+            del r["n"]
     return fuori
 
 
@@ -446,6 +556,66 @@ def _scrivi_decklist(wb, liste: list[dict]) -> int:
     return len(valide)
 
 
+def _scrivi_tornei(wb, tornei: list[dict]) -> int:
+    """Riscrive il foglio Tornei, una riga per round. Lo crea se manca."""
+    if FOGLIO_TORNEI in wb.sheetnames:
+        ws = wb[FOGLIO_TORNEI]
+    else:
+        ws = wb.create_sheet(FOGLIO_TORNEI)
+        for i, nome in enumerate(INTESTAZIONI_TORNEI):
+            c = ws.cell(row=1, column=i + 1, value=nome)
+            c.font = Font(bold=True)
+            c.fill = PatternFill("solid", fgColor="F2F2F2")
+        larghezze = [16, 12, 14, 11, 26, 18, 13, 8, 26, 5, 5, 5, 15]
+        for col, w in zip(COLONNE_TORNEI, larghezze):
+            ws.column_dimensions[col].width = w
+        ws.freeze_panes = "A2"
+
+    ultima_prima = ws.max_row
+    ordinati = sorted(
+        (t for t in tornei if testo(t.get("deck"))),
+        key=lambda t: t.get("data") or "",
+    )
+
+    riga = PRIMA_RIGA
+    for t in ordinati:
+        rounds = t.get("round") or []
+        # Un torneo senza round occupa comunque una riga: altrimenti sparirebbe.
+        tipologia = _canonico(testo(t.get("tipologia")), TIPOLOGIE) or "Local"
+        # In amichevole non ci si piazza: nel foglio non deve comparire niente.
+        piazzamento = "" if tipologia == "Amichevole" else _canonico(testo(t.get("piazzamento")), PIAZZAMENTI)
+        for n, r in enumerate(rounds or [None], start=1):
+            data = testo(t.get("data"))
+            partite = [p for p in ((r or {}).get("partite") or []) if p in ("W", "L")][:3]
+            valori = {
+                "A": testo(t.get("id")),
+                "B": datetime.strptime(data, "%Y-%m-%d") if data else None,
+                "C": tipologia,
+                "D": testo(t.get("formato")),
+                "E": testo(t.get("deck")),
+                "F": testo(t.get("decklist")),
+                "G": piazzamento,
+                "H": n if r is not None else None,
+                "I": testo((r or {}).get("avversario")),
+                "J": partite[0] if len(partite) > 0 else None,
+                "K": partite[1] if len(partite) > 1 else None,
+                "L": partite[2] if len(partite) > 2 else None,
+                # Scritto solo per chi legge il foglio: rileggendo si ricalcola
+                # dalle partite, che sono l'unica fonte.
+                "M": esito_round(partite) if r is not None else None,
+            }
+            for col, v in valori.items():
+                ws[f"{col}{riga}"].value = v if v != "" else None
+            ws[f"B{riga}"].number_format = "dd/mm/yyyy"
+            riga += 1
+
+    for r in range(riga, ultima_prima + 1):
+        for col in COLONNE_TORNEI:
+            ws[f"{col}{r}"].value = None
+
+    return len(ordinati)
+
+
 def _fai_backup(percorso: Path) -> Path:
     BACKUP.mkdir(parents=True, exist_ok=True)
     quando = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -457,7 +627,12 @@ def _fai_backup(percorso: Path) -> Path:
     return copia
 
 
-def scrivi(percorso: Path, match: list[dict], decklist: list[dict] | None = None) -> dict:
+def scrivi(
+    percorso: Path,
+    match: list[dict],
+    decklist: list[dict] | None = None,
+    tornei: list[dict] | None = None,
+) -> dict:
     """
     Riscrive le colonne A-K del foglio Match con il registro passato.
 
@@ -504,6 +679,7 @@ def scrivi(percorso: Path, match: list[dict], decklist: list[dict] | None = None
     # `decklist` assente significa "non toccare quel foglio": un client vecchio
     # che manda solo i match non deve cancellare le liste salvate.
     liste_scritte = None if decklist is None else _scrivi_decklist(wb, decklist)
+    tornei_scritti = None if tornei is None else _scrivi_tornei(wb, tornei)
 
     # Le formule L-R non hanno piu' un valore in cache dopo la riscrittura:
     # senza questo Excel potrebbe mostrarle vuote finche' non si tocca una cella.
@@ -517,6 +693,7 @@ def scrivi(percorso: Path, match: list[dict], decklist: list[dict] | None = None
     return {
         "scritti": len(ordinati),
         "listeScritte": liste_scritte,
+        "torneiScritti": tornei_scritti,
         "rimosse": svuotate,
         "formuleAggiunte": formule_aggiunte,
         "backup": _relativo(backup),

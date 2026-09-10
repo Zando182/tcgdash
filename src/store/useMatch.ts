@@ -1,9 +1,12 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import seed from '../data/seed.json'
 import { impronta, leggiDaExcel, scriviSuExcel, statoExcel, type StatoExcel } from '../lib/api'
 import { normalizza, oggiIso, perNome } from '../lib/format'
+import { eAmichevole, partiteDaTornei } from '../lib/tornei'
 import { storageDisponibile } from '../lib/storage'
-import type { Lista, Liste, Match, Seed, Turno } from '../types'
+import type { Esito, Lista, Liste, Match, Piazzamento, Seed, TorneoMio, Turno } from '../types'
+import { PIAZZAMENTI, TIPOLOGIE } from '../types'
 
 const CHIAVE = 'tcgdash:registro:v1'
 const SEED = seed as unknown as Seed
@@ -22,6 +25,8 @@ export type Registro = {
   match: Match[]
   /** Le liste salvate, testo grezzo incollato dalla pagina Liste. */
   decklist: Lista[]
+  /** I tornei, con i round al meglio di tre. */
+  tornei: TorneoMio[]
   /** Valori aggiunti a mano che non compaiono (ancora) in nessun match. */
   extra: Partial<Liste>
 }
@@ -57,10 +62,19 @@ export type StatoRegistro = Registro & {
   /** Salva una lista nuova, o ne aggiorna una esistente se l'id combacia. */
   salvaLista: (lista: Omit<Lista, 'id' | 'aggiornata'> & { id?: string }) => void
   eliminaLista: (id: string) => void
+
+  /** Salva un torneo nuovo, o ne aggiorna uno esistente se l'id combacia. */
+  salvaTorneo: (t: Omit<TorneoMio, 'id'> & { id?: string }) => void
+  eliminaTorneo: (id: string) => void
 }
 
 function nuovoId(): string {
   return `m-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function nuovoIdTorneo(): string {
+  // Il prefisso "t-" e' quello che `daTorneo` riconosce nelle partite derivate.
+  return `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 function nuovoIdLista(): string {
@@ -104,10 +118,44 @@ function sanificaLista(l: Partial<Lista> & Record<string, unknown>, i: number): 
   }
 }
 
+/** Ripulisce un torneo letto da JSON o dall'Excel. */
+function sanificaTorneo(t: Partial<TorneoMio> & Record<string, unknown>, i: number): TorneoMio | null {
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+  const deck = str(t.deck)
+  if (!deck) return null
+  const grezza = str(t.tipologia)
+  const tipologia =
+    TIPOLOGIE.find((x) => x.toLowerCase() === grezza.toLowerCase()) ?? (grezza || 'Local')
+  const p = str(t.piazzamento)
+  const piazzamento = eAmichevole(tipologia)
+    ? null
+    : ((PIAZZAMENTI.find((x) => x.toLowerCase() === p.toLowerCase()) as Piazzamento | undefined) ?? null)
+  const round = Array.isArray(t.round)
+    ? t.round.map((r) => {
+        const x = (r ?? {}) as { avversario?: unknown; partite?: unknown }
+        const partite = Array.isArray(x.partite)
+          ? x.partite.filter((e): e is Esito => e === 'W' || e === 'L').slice(0, 3)
+          : []
+        return { avversario: str(x.avversario), partite }
+      })
+    : []
+  return {
+    id: str(t.id) || `t-imp-${i}`,
+    data: str(t.data),
+    formato: str(t.formato),
+    deck,
+    decklist: str(t.decklist),
+    tipologia,
+    piazzamento,
+    round,
+  }
+}
+
 export function leggiRegistro(testo: string): Registro {
   const dati = JSON.parse(testo) as {
     match?: unknown[]
     decklist?: unknown[]
+    tornei?: unknown[]
     extra?: Partial<Liste>
   }
   if (!Array.isArray(dati.match)) throw new Error('File non valido: manca l’elenco "match".')
@@ -120,7 +168,12 @@ export function leggiRegistro(testo: string): Registro {
         .map((l, i) => sanificaLista(l as Partial<Lista>, i))
         .filter((l): l is Lista => l !== null)
     : []
-  return { match, decklist, extra: dati.extra ?? {} }
+  const tornei = Array.isArray(dati.tornei)
+    ? dati.tornei
+        .map((t, i) => sanificaTorneo(t as Partial<TorneoMio>, i))
+        .filter((t): t is TorneoMio => t !== null)
+    : []
+  return { match, decklist, tornei, extra: dati.extra ?? {} }
 }
 
 /**
@@ -173,6 +226,9 @@ function dalSeed(): Registro {
     decklist: (SEED.decklist ?? [])
       .map((l, i) => sanificaLista(l, i))
       .filter((l): l is Lista => l !== null),
+    tornei: (SEED.tornei ?? [])
+      .map((t, i) => sanificaTorneo(t, i))
+      .filter((t): t is TorneoMio => t !== null),
     extra: {},
   }
 }
@@ -206,17 +262,17 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
   // (si inseriscono due match di fila), si manda solo l'ultimo registro, che
   // le contiene tutte.
   let inVolo = false
-  let inCoda: { match: Match[]; decklist: Lista[] } | null = null
+  let inCoda: Registro | null = null
 
-  async function versoExcel(match: Match[], decklist: Lista[]): Promise<void> {
+  async function versoExcel(r: Registro): Promise<void> {
     if (get().modo !== 'excel') return
     if (inVolo) {
-      inCoda = { match, decklist }
+      inCoda = r
       return
     }
     inVolo = true
     try {
-      const esito = await scriviSuExcel(perFoglio(match), decklist)
+      const esito = await scriviSuExcel(perFoglio(r.match), r.decklist, r.tornei)
       set({
         erroreExcel: null,
         ultimoSalvataggio: new Date().toISOString(),
@@ -228,7 +284,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       inVolo = false
       const prossimo = inCoda
       inCoda = null
-      if (prossimo) await versoExcel(prossimo.match, prossimo.decklist)
+      if (prossimo) await versoExcel(prossimo)
     }
   }
 
@@ -237,6 +293,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
     const aggiornato = aggiorna({
       match: get().match,
       decklist: get().decklist,
+      tornei: get().tornei,
       extra: get().extra,
     })
     const prossimo = { ...aggiornato, match: perDataDecrescente(aggiornato.match) }
@@ -244,7 +301,7 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
     // sul workbook fallisce (file aperto in Excel), niente e' perso.
     salvaLocale(prossimo)
     set(prossimo)
-    void versoExcel(prossimo.match, prossimo.decklist)
+    void versoExcel(prossimo)
   }
 
   return {
@@ -281,7 +338,10 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
         const decklist = dal.decklist
           .map((l, i) => sanificaLista(l, i))
           .filter((l): l is Lista => l !== null)
-        const registro = { match, decklist, extra: get().extra }
+        const tornei = dal.tornei
+          .map((t, i) => sanificaTorneo(t, i))
+          .filter((t): t is TorneoMio => t !== null)
+        const registro = { match, decklist, tornei, extra: get().extra }
         salvaLocale(registro)
         set({ ...registro, modo: 'excel', excel: stato, caricamento: false, soloNelBrowser })
       } catch (e) {
@@ -300,7 +360,8 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
 
     riprovaSalvataggio: async () => {
       set({ erroreExcel: null })
-      await versoExcel(get().match, get().decklist)
+      const { match, decklist, tornei, extra } = get()
+      await versoExcel({ match, decklist, tornei, extra })
     },
 
     recuperaSoloNelBrowser: async () => {
@@ -312,11 +373,12 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       const prossimo = {
         match: perDataDecrescente([...daAggiungere, ...match]),
         decklist: get().decklist,
+        tornei: get().tornei,
         extra: get().extra,
       }
       salvaLocale(prossimo)
       set(prossimo)
-      await versoExcel(prossimo.match, prossimo.decklist)
+      await versoExcel(prossimo)
     },
 
     aggiungi: (m) => scrivi((r) => ({ ...r, match: [{ ...m, id: nuovoId() }, ...r.match] })),
@@ -378,8 +440,34 @@ export const useRegistro = create<StatoRegistro>((set, get) => {
       }),
 
     eliminaLista: (id) => scrivi((r) => ({ ...r, decklist: r.decklist.filter((l) => l.id !== id) })),
+
+    salvaTorneo: (t) =>
+      scrivi((r) => {
+        const pulito = sanificaTorneo({ ...t, id: t.id ?? nuovoIdTorneo() }, r.tornei.length)
+        if (!pulito) return r
+        const esiste = r.tornei.some((x) => x.id === pulito.id)
+        return {
+          ...r,
+          tornei: esiste
+            ? r.tornei.map((x) => (x.id === pulito.id ? pulito : x))
+            : [pulito, ...r.tornei],
+        }
+      }),
+
+    eliminaTorneo: (id) => scrivi((r) => ({ ...r, tornei: r.tornei.filter((t) => t.id !== id) })),
   }
 })
+
+/**
+ * Tutte le partite su cui si fanno le statistiche: quelle del foglio Match
+ * piu' quelle dei tornei, sciolte in match singoli. Le seconde esistono solo
+ * qui: il registro e il workbook tengono i tornei nel loro foglio.
+ */
+export function useTutteLePartite(): Match[] {
+  const match = useRegistro((s) => s.match)
+  const tornei = useRegistro((s) => s.tornei)
+  return useMemo(() => [...match, ...partiteDaTornei(tornei)], [match, tornei])
+}
 
 /** Valori distinti di un campo, come compaiono nei match. */
 function elencoDa(match: Match[], campo: keyof Liste): string[] {

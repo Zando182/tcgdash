@@ -49,7 +49,10 @@ def main() -> int:
             decklist = richiesta.get("decklist")
             if decklist is not None and not isinstance(decklist, list):
                 raise ValueError('"decklist" deve essere un elenco.')
-            print(json_out(scrivi(percorso, match, decklist)))
+            tornei = richiesta.get("tornei")
+            if tornei is not None and not isinstance(tornei, list):
+                raise ValueError('"tornei" deve essere un elenco.')
+            print(json_out(scrivi(percorso, match, decklist, tornei)))
             return 0
 
         if comando == "pulisci":

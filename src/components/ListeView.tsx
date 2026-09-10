@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { dataIt, normalizza, perNome } from '../lib/format'
-import { liste as elenchiDa, useRegistro } from '../store/useMatch'
+import { liste as elenchiDa, useRegistro, useTutteLePartite } from '../store/useMatch'
 import type { Lista } from '../types'
 import { CampoConElenco, Section, Vuoto } from './ui'
 
@@ -17,7 +17,9 @@ const BOZZA_VUOTA: Bozza = { nome: '', mazzo: '', testo: '' }
  * qui l'unica cosa che serve davvero e' ritrovare cosa c'era nel mazzo.
  */
 export function ListeView() {
-  const { match, decklist, extra, salvaLista, eliminaLista } = useRegistro()
+  const { decklist, extra, salvaLista, eliminaLista } = useRegistro()
+  // Contano anche le liste usate nei tornei.
+  const match = useTutteLePartite()
   const [bozza, setBozza] = useState<Bozza>(BOZZA_VUOTA)
   const [messaggio, setMessaggio] = useState<string | null>(null)
   const [cerca, setCerca] = useState('')
