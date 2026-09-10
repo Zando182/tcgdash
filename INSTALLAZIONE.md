@@ -262,8 +262,8 @@ I fogli sono questi:
   toccarle, si riempiono da sole.
 - **Decklist** — il testo delle liste che salvi dalla pagina Liste. Compare la
   prima volta che ne salvi una.
-- **Tornei** — i tornei che salvi da "Inserisci torneo", una riga per round.
-  Compare la prima volta che ne salvi uno.
+- **Tornei** — i tornei che salvi da "Inserisci torneo", una riga per partita,
+  con 1°/2°, esito, tag e note. Compare la prima volta che ne salvi uno.
 - **Liste** — nascosto. Serve solo alle tendine del foglio Match e si aggiorna
   da solo.
 

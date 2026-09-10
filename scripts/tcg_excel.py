@@ -45,10 +45,11 @@ FOGLIO_TORNEI = "Tornei"
 # rifa' meglio, e vengono eliminate da pulisci().
 FOGLI_DA_TENERE = {FOGLIO_DATI, FOGLIO_LISTE, FOGLIO_DECKLIST, FOGLIO_TORNEI}
 
-# Foglio Tornei: una riga per round, con i dati del torneo ripetuti su ogni
-# riga. Ripetere e' meno elegante di due tabelle collegate, ma e' una tabella
-# sola che si legge, si filtra e si ordina in Excel senza sapere niente di
-# chiavi esterne. La colonna ID tiene insieme i round dello stesso torneo.
+# Foglio Tornei: una riga per partita, come il foglio Match, con i dati del
+# torneo e del round ripetuti su ogni riga. Ripetere e' meno elegante di tre
+# tabelle collegate, ma e' una tabella sola che si legge, si filtra e si
+# ordina in Excel senza sapere niente di chiavi esterne. La colonna ID tiene
+# insieme le righe dello stesso torneo, Round e Partita le ordinano.
 COLONNE_TORNEI = {
     "A": "id",
     "B": "data",
@@ -59,14 +60,16 @@ COLONNE_TORNEI = {
     "G": "piazzamento",
     "H": "round",
     "I": "avversario",
-    "J": "g1",
-    "K": "g2",
-    "L": "g3",
-    "M": "risultato",
+    "J": "partita",
+    "K": "turno",
+    "L": "esito",
+    "M": "tag",
+    "N": "note",
+    "O": "risultato",
 }
 INTESTAZIONI_TORNEI = [
-    "ID", "Data", "Tipologia", "Formato", "Mazzo", "Lista", "Piazzamento",
-    "Round", "Mazzo avversario", "G1", "G2", "G3", "Risultato round",
+    "ID", "Data", "Tipologia", "Formato", "Mazzo", "Lista", "Piazzamento", "Round",
+    "Mazzo avversario", "Partita", "1°/2°", "Esito", "TAG", "Note", "Risultato round",
 ]
 TIPOLOGIE = ("Local", "Challenge", "Sfida di lega", "Amichevole")
 PIAZZAMENTI = ("Vittoria", "Finale", "Top 4", "Top 8", "Altro")
@@ -340,10 +343,11 @@ def esito_round(partite: list[str]) -> str:
 
 
 def _leggi_tornei(wb) -> list[dict]:
-    """I tornei dal foglio Tornei, raggruppando i round per ID."""
+    """I tornei dal foglio Tornei, raggruppando le righe per torneo e per round."""
     if FOGLIO_TORNEI not in wb.sheetnames:
         return []
     ws = wb[FOGLIO_TORNEI]
+    tag_visti: dict[str, str] = {}
     per_id: dict[str, dict] = {}
     for riga in range(PRIMA_RIGA, ws.max_row + 1):
         val = {campo: ws[f"{col}{riga}"].value for col, campo in COLONNE_TORNEI.items()}
@@ -367,23 +371,49 @@ def _leggi_tornei(wb) -> list[dict]:
                 # In amichevole non ci si piazza: il campo si ignora anche se
                 # nel foglio c'e' scritto qualcosa.
                 "piazzamento": None if tipologia == "Amichevole" else piazzamento,
-                "round": [],
+                "_round": {},
             }
-        partite = [e for e in (_esito_partita(val[g]) for g in ("g1", "g2", "g3")) if e]
-        avversario = testo(val["avversario"])
-        if avversario or partite:
-            numero = val["round"]
-            try:
-                numero = int(numero)
-            except (TypeError, ValueError):
-                numero = len(t["round"]) + 1
-            t["round"].append({"n": numero, "avversario": avversario, "partite": partite})
 
-    fuori = list(per_id.values())
-    for t in fuori:
-        t["round"].sort(key=lambda r: r["n"])
-        for r in t["round"]:
-            del r["n"]
+        avversario = testo(val["avversario"])
+        esito = _esito_partita(val["esito"])
+        if not avversario and not esito and val["round"] is None:
+            continue  # riga del torneo senza round
+        try:
+            n_round = int(val["round"])
+        except (TypeError, ValueError):
+            n_round = len(t["_round"]) + 1
+        r = t["_round"].setdefault(n_round, {"avversario": avversario, "_partite": []})
+        if avversario and not r["avversario"]:
+            r["avversario"] = avversario
+        if not esito:
+            continue  # round registrato senza partite
+        try:
+            n_partita = int(val["partita"])
+        except (TypeError, ValueError):
+            n_partita = len(r["_partite"]) + 1
+        r["_partite"].append(
+            (
+                n_partita,
+                {
+                    "esito": esito,
+                    "turno": _turno(val["turno"]),
+                    "tag": _tag(val["tag"], tag_visti),
+                    "note": testo(val["note"]),
+                },
+            )
+        )
+
+    fuori: list[dict] = []
+    for t in per_id.values():
+        per_round = t.pop("_round")
+        t["round"] = [
+            {
+                "avversario": per_round[n]["avversario"],
+                "partite": [g for _, g in sorted(per_round[n]["_partite"], key=lambda x: x[0])],
+            }
+            for n in sorted(per_round)
+        ]
+        fuori.append(t)
     return fuori
 
 
@@ -556,17 +586,39 @@ def _scrivi_decklist(wb, liste: list[dict]) -> int:
     return len(valide)
 
 
+def _partita_valida(p) -> dict | None:
+    """Una partita di torneo ripulita, o None se non ha un esito."""
+    if isinstance(p, str):  # formato di prima: solo "W" o "L"
+        p = {"esito": p}
+    if not isinstance(p, dict):
+        return None
+    esito = _esito_partita(p.get("esito"))
+    if not esito:
+        return None
+    turno = p.get("turno")
+    return {
+        "esito": esito,
+        "turno": turno if turno in (1, 2) else None,
+        "tag": [testo(x) for x in (p.get("tag") or []) if testo(x)],
+        "note": testo(p.get("note")),
+    }
+
+
 def _scrivi_tornei(wb, tornei: list[dict]) -> int:
-    """Riscrive il foglio Tornei, una riga per round. Lo crea se manca."""
+    """
+    Riscrive il foglio Tornei, una riga per partita. Lo crea se manca, e ne
+    rifa' l'intestazione se e' ancora nel formato di prima (una riga per round).
+    """
     if FOGLIO_TORNEI in wb.sheetnames:
         ws = wb[FOGLIO_TORNEI]
     else:
         ws = wb.create_sheet(FOGLIO_TORNEI)
+    if [ws.cell(row=1, column=i + 1).value for i in range(len(INTESTAZIONI_TORNEI))] != INTESTAZIONI_TORNEI:
         for i, nome in enumerate(INTESTAZIONI_TORNEI):
             c = ws.cell(row=1, column=i + 1, value=nome)
             c.font = Font(bold=True)
             c.fill = PatternFill("solid", fgColor="F2F2F2")
-        larghezze = [16, 12, 14, 11, 26, 18, 13, 8, 26, 5, 5, 5, 15]
+        larghezze = [16, 12, 14, 11, 26, 18, 13, 7, 26, 8, 7, 7, 22, 40, 15]
         for col, w in zip(COLONNE_TORNEI, larghezze):
             ws.column_dimensions[col].width = w
         ws.freeze_panes = "A2"
@@ -578,36 +630,59 @@ def _scrivi_tornei(wb, tornei: list[dict]) -> int:
     )
 
     riga = PRIMA_RIGA
+
+    def scrivi_riga(valori: dict) -> None:
+        nonlocal riga
+        for col in COLONNE_TORNEI:
+            v = valori.get(col)
+            ws[f"{col}{riga}"].value = v if v != "" else None
+        ws[f"B{riga}"].number_format = "dd/mm/yyyy"
+        ws[f"N{riga}"].alignment = Alignment(wrap_text=True, vertical="top")
+        riga += 1
+
     for t in ordinati:
-        rounds = t.get("round") or []
-        # Un torneo senza round occupa comunque una riga: altrimenti sparirebbe.
         tipologia = _canonico(testo(t.get("tipologia")), TIPOLOGIE) or "Local"
         # In amichevole non ci si piazza: nel foglio non deve comparire niente.
         piazzamento = "" if tipologia == "Amichevole" else _canonico(testo(t.get("piazzamento")), PIAZZAMENTI)
-        for n, r in enumerate(rounds or [None], start=1):
-            data = testo(t.get("data"))
-            partite = [p for p in ((r or {}).get("partite") or []) if p in ("W", "L")][:3]
-            valori = {
-                "A": testo(t.get("id")),
-                "B": datetime.strptime(data, "%Y-%m-%d") if data else None,
-                "C": tipologia,
-                "D": testo(t.get("formato")),
-                "E": testo(t.get("deck")),
-                "F": testo(t.get("decklist")),
-                "G": piazzamento,
-                "H": n if r is not None else None,
-                "I": testo((r or {}).get("avversario")),
-                "J": partite[0] if len(partite) > 0 else None,
-                "K": partite[1] if len(partite) > 1 else None,
-                "L": partite[2] if len(partite) > 2 else None,
+        data = testo(t.get("data"))
+        torneo = {
+            "A": testo(t.get("id")),
+            "B": datetime.strptime(data, "%Y-%m-%d") if data else None,
+            "C": tipologia,
+            "D": testo(t.get("formato")),
+            "E": testo(t.get("deck")),
+            "F": testo(t.get("decklist")),
+            "G": piazzamento,
+        }
+        rounds = t.get("round") or []
+        if not rounds:
+            # Un torneo senza round occupa comunque una riga: altrimenti sparirebbe.
+            scrivi_riga(torneo)
+            continue
+        for n, r in enumerate(rounds, start=1):
+            partite = [g for g in (_partita_valida(p) for p in (r.get("partite") or [])) if g][:3]
+            del_round = {
+                **torneo,
+                "H": n,
+                "I": testo(r.get("avversario")),
                 # Scritto solo per chi legge il foglio: rileggendo si ricalcola
                 # dalle partite, che sono l'unica fonte.
-                "M": esito_round(partite) if r is not None else None,
+                "O": esito_round([g["esito"] for g in partite]),
             }
-            for col, v in valori.items():
-                ws[f"{col}{riga}"].value = v if v != "" else None
-            ws[f"B{riga}"].number_format = "dd/mm/yyyy"
-            riga += 1
+            if not partite:
+                scrivi_riga(del_round)
+                continue
+            for k, g in enumerate(partite, start=1):
+                scrivi_riga(
+                    {
+                        **del_round,
+                        "J": k,
+                        "K": g["turno"],
+                        "L": g["esito"],
+                        "M": ", ".join(g["tag"]),
+                        "N": g["note"],
+                    }
+                )
 
     for r in range(riga, ultima_prima + 1):
         for col in COLONNE_TORNEI:

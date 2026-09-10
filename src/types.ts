@@ -47,12 +47,23 @@ export const PIAZZAMENTI = ['Vittoria', 'Finale', 'Top 4', 'Top 8', 'Altro'] as 
 export type Piazzamento = (typeof PIAZZAMENTI)[number]
 
 /**
+ * Una partita dentro un round di torneo: ha tutto quello che ha un match
+ * singolo, perche' nelle statistiche diventa esattamente un match singolo.
+ */
+export type PartitaTorneo = {
+  esito: Esito
+  turno: Turno | null
+  tag: string[]
+  note: string
+}
+
+/**
  * Un round al meglio di tre contro lo stesso mazzo.
- * `partite` ha da 0 a 3 esiti: il risultato del round si ricava da qui.
+ * `partite` ne ha da 0 a 3: il risultato del round si ricava da qui.
  */
 export type Round = {
   avversario: string
-  partite: Esito[]
+  partite: PartitaTorneo[]
 }
 
 export type TorneoMio = {

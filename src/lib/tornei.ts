@@ -30,11 +30,14 @@ export const ETICHETTA_ROUND: Record<EsitoRound, string> = {
 
 export type Record3 = { v: number; p: number; s: number }
 
+/** Gli esiti delle partite di un round, per `esitoRound`. */
+export const esitiDi = (r: Round): Esito[] => r.partite.map((p) => p.esito)
+
 /** Round vinti, pareggiati e persi. */
 export function recordRound(round: Round[]): Record3 {
   const r: Record3 = { v: 0, p: 0, s: 0 }
   for (const x of round) {
-    const e = esitoRound(x.partite)
+    const e = esitoRound(esitiDi(x))
     if (e === 'V') r.v++
     else if (e === 'P') r.p++
     else if (e === 'S') r.s++
@@ -48,7 +51,7 @@ export function recordPartite(round: Round[]): { v: number; s: number } {
   let s = 0
   for (const x of round) {
     for (const p of x.partite) {
-      if (p === 'W') v++
+      if (p.esito === 'W') v++
       else s++
     }
   }
@@ -61,8 +64,10 @@ export const eAmichevole = (tipologia: string) => tipologia.trim().toLowerCase()
  * Le partite dei tornei come match singoli, per le statistiche.
  *
  * Ogni partita di ogni round diventa un match contro l'avversario del round,
- * con la tipologia del torneo nella colonna Torneo: cosi' winrate, matchup e
- * panoramica le contano insieme alle altre, e il filtro Torneo le separa.
+ * con il suo esito, chi ha iniziato, i suoi tag e le sue note, e la tipologia
+ * del torneo nella colonna Torneo: cosi' winrate, 1°/2°, tag, matchup e
+ * playbook delle note le contano insieme alle altre, e il filtro Torneo le
+ * separa.
  *
  * Esistono solo in memoria: nel workbook stanno nel foglio Tornei, non in
  * Match, e non vanno mai scritte li' — sarebbero contate due volte.
@@ -72,7 +77,7 @@ export function partiteDaTornei(tornei: TorneoMio[]): Match[] {
   for (const t of tornei) {
     t.round.forEach((r, i) => {
       if (!r.avversario.trim()) return
-      r.partite.forEach((esito, k) => {
+      r.partite.forEach((p, k) => {
         fuori.push({
           id: `${t.id}-r${i + 1}-g${k + 1}`,
           data: t.data,
@@ -80,12 +85,11 @@ export function partiteDaTornei(tornei: TorneoMio[]): Match[] {
           deck: t.deck,
           decklist: t.decklist,
           avversario: r.avversario,
-          // Chi inizia nelle singole partite di un BO3 non si registra.
-          turno: null,
-          risultato: esito,
-          tag: [],
+          turno: p.turno,
+          risultato: p.esito,
+          tag: p.tag,
           torneo: t.tipologia,
-          note: '',
+          note: p.note,
         })
       })
     })

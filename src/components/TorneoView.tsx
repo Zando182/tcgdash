@@ -1,19 +1,29 @@
 import { useMemo, useState } from 'react'
-import { dataIt, oggiIso } from '../lib/format'
+import { dataIt, normalizza, oggiIso } from '../lib/format'
 import {
   ETICHETTA_ROUND,
   eAmichevole,
+  esitiDi,
   esitoRound,
   recordPartite,
   recordRound,
   type EsitoRound,
 } from '../lib/tornei'
 import { liste, useRegistro, useTutteLePartite } from '../store/useMatch'
-import { PIAZZAMENTI, TIPOLOGIE, type Esito, type Piazzamento, type TorneoMio } from '../types'
+import {
+  PIAZZAMENTI,
+  TIPOLOGIE,
+  type Esito,
+  type PartitaTorneo,
+  type Piazzamento,
+  type TorneoMio,
+  type Turno,
+} from '../types'
 import { CampoConElenco, Section, Vuoto } from './ui'
 
-/** Un round nel modulo: tre caselle, ognuna vuota, vinta o persa. */
-type BozzaRound = { avversario: string; g: [Esito | null, Esito | null, Esito | null] }
+/** Una partita nel modulo: come una partita di torneo, ma l'esito puo' mancare. */
+type BozzaPartita = { esito: Esito | null; turno: Turno | null; tag: string[]; note: string }
+type BozzaRound = { avversario: string; g: [BozzaPartita, BozzaPartita, BozzaPartita] }
 
 type Bozza = {
   id?: string
@@ -26,9 +36,14 @@ type Bozza = {
   round: BozzaRound[]
 }
 
-const ROUND_VUOTO = (): BozzaRound => ({ avversario: '', g: [null, null, null] })
+const PARTITA_VUOTA = (): BozzaPartita => ({ esito: null, turno: null, tag: [], note: '' })
+const ROUND_VUOTO = (): BozzaRound => ({
+  avversario: '',
+  g: [PARTITA_VUOTA(), PARTITA_VUOTA(), PARTITA_VUOTA()],
+})
 const ROUND_INIZIALI = 3
 const ROUND_MASSIMI = 20
+const ID_TAG_NOTI = 'torneo-tag-noti'
 
 function bozzaVuota(base?: { formato: string; deck: string; decklist: string }): Bozza {
   return {
@@ -42,21 +57,41 @@ function bozzaVuota(base?: { formato: string; deck: string; decklist: string }):
   }
 }
 
-/** Le partite di un round del modulo, senza le caselle vuote. */
-const partiteDi = (r: BozzaRound): Esito[] => r.g.filter((x): x is Esito => x !== null)
+/**
+ * Quali partite del round si possono giocare: la prima sempre, la seconda
+ * dopo la prima, la terza solo sull'1-1.
+ */
+function visibili(r: BozzaRound): [boolean, boolean, boolean] {
+  const [a, b] = r.g
+  return [true, a.esito !== null, a.esito !== null && b.esito !== null && a.esito !== b.esito]
+}
 
 /**
- * La terza partita si gioca solo sull'1-1. Quando le prime due non lo sono
- * piu' (si e' corretta una casella), la terza va svuotata: altrimenti un 2-0
- * con una terza partita dimenticata diventerebbe un 2-1 che non c'e' stato.
+ * Una partita che non si puo' piu' giocare (si e' corretta una delle prime
+ * due e l'1-1 e' saltato) perde l'esito: altrimenti un 2-0 con una terza
+ * dimenticata diventerebbe un 2-1 mai giocato. Note, tag e 1°/2° invece
+ * restano, come bozza: se la correzione era sbagliata e si torna all'1-1, non
+ * si deve riscrivere tutto.
  */
 function normalizzaRound(r: BozzaRound): BozzaRound {
-  const [a, b, c] = r.g
-  if (a === null) return { ...r, g: [null, null, null] }
-  if (b === null) return { ...r, g: [a, null, null] }
-  const unoUno = a !== b
-  return { ...r, g: [a, b, unoUno ? c : null] }
+  const g = [...r.g] as BozzaRound['g']
+  for (let k = 0; k < 3; k++) {
+    const v = visibili({ ...r, g })
+    if (!v[k] && g[k].esito !== null) g[k] = { ...g[k], esito: null }
+  }
+  return { ...r, g }
 }
+
+/** Le partite giocate del round, cioe' quelle visibili con un esito. */
+function giocate(r: BozzaRound): PartitaTorneo[] {
+  const v = visibili(r)
+  return r.g
+    .filter((p, k) => v[k] && p.esito !== null)
+    .map((p) => ({ esito: p.esito as Esito, turno: p.turno, tag: p.tag, note: p.note.trim() }))
+}
+
+/** Vero se nella partita si e' scritto qualcosa oltre all'esito. */
+const haDettagli = (p: BozzaPartita) => p.turno !== null || p.tag.length > 0 || p.note.trim() !== ''
 
 const COLORE_ESITO: Record<EsitoRound, string> = {
   V: 'bg-win/15 text-win border-win/40',
@@ -68,9 +103,10 @@ const COLORE_ESITO: Record<EsitoRound, string> = {
  * Inserimento di un torneo: dati generali, piazzamento (salvo in amichevole) e
  * un numero a scelta di round al meglio di tre, ognuno contro un mazzo.
  *
- * Il risultato del round non si sceglie: si ricava dalle partite, cosi' non
- * puo' contraddirle. Le partite finiscono anche nelle statistiche della
- * dashboard, con la tipologia del torneo nella colonna Torneo.
+ * Ogni partita del round ha esito, chi ha iniziato, tag e note: nelle
+ * statistiche diventa un match singolo come quelli inseriti a mano, con la
+ * tipologia del torneo nella colonna Torneo. Il risultato del round non si
+ * sceglie: si ricava dalle partite, cosi' non puo' contraddirle.
  */
 export function TorneoView() {
   const { tornei, extra, salvaTorneo, eliminaTorneo, match } = useRegistro()
@@ -106,7 +142,7 @@ export function TorneoView() {
     })
 
   const riepilogo = useMemo(() => {
-    const round = bozza.round.map((r) => ({ avversario: r.avversario, partite: partiteDi(r) }))
+    const round = bozza.round.map((r) => ({ avversario: r.avversario, partite: giocate(r) }))
     return { round: recordRound(round), partite: recordPartite(round) }
   }, [bozza.round])
 
@@ -120,19 +156,29 @@ export function TorneoView() {
       setMessaggio({ ok: false, testo: 'Manca il piazzamento: com’è andata?' })
       return
     }
-    // Un round senza avversario e senza partite e' solo una riga lasciata
-    // vuota; con le partite ma senza avversario invece e' un dato a meta'.
-    const senzaAvversario = bozza.round.findIndex(
-      (r) => !r.avversario.trim() && partiteDi(r).length > 0,
-    )
-    if (senzaAvversario >= 0) {
-      setMessaggio({ ok: false, testo: `Round ${senzaAvversario + 1}: manca il mazzo avversario.` })
-      return
+    for (const [i, r] of bozza.round.entries()) {
+      const partite = giocate(r)
+      // Con le partite ma senza avversario il round e' un dato a meta'.
+      if (!r.avversario.trim() && partite.length > 0) {
+        setMessaggio({ ok: false, testo: `Round ${i + 1}: manca il mazzo avversario.` })
+        return
+      }
+      // Note o tag scritti in una partita senza esito andrebbero persi in
+      // silenzio: meglio fermarsi e dirlo.
+      const v = visibili(r)
+      const k = r.g.findIndex((p, j) => v[j] && p.esito === null && haDettagli(p))
+      if (k >= 0) {
+        setMessaggio({
+          ok: false,
+          testo: `Round ${i + 1}, partita ${k + 1}: hai scritto dei dettagli ma manca l’esito (V o S).`,
+        })
+        return
+      }
     }
 
     const round = bozza.round
-      .filter((r) => r.avversario.trim() || partiteDi(r).length > 0)
-      .map((r) => ({ avversario: r.avversario.trim(), partite: partiteDi(r) }))
+      .filter((r) => r.avversario.trim() || giocate(r).length > 0)
+      .map((r) => ({ avversario: r.avversario.trim(), partite: giocate(r) }))
 
     salvaTorneo({
       id: bozza.id,
@@ -144,20 +190,24 @@ export function TorneoView() {
       piazzamento: amichevole ? null : (bozza.piazzamento as Piazzamento),
       round,
     })
+    const nPartite = round.reduce((n, r) => n + r.partite.length, 0)
     setMessaggio({
       ok: true,
       testo: bozza.id
         ? 'Torneo aggiornato.'
-        : `Torneo salvato: ${bozza.tipologia}, ${round.length} round.`,
+        : `Torneo salvato: ${bozza.tipologia}, ${round.length} round, ${nPartite} partite.`,
     })
     setBozza(bozzaVuota({ formato: bozza.formato, deck: bozza.deck, decklist: bozza.decklist }))
   }
 
   const apriModifica = (t: TorneoMio) => {
-    const round: BozzaRound[] = t.round.map((r) => ({
-      avversario: r.avversario,
-      g: [r.partite[0] ?? null, r.partite[1] ?? null, r.partite[2] ?? null],
-    }))
+    const round: BozzaRound[] = t.round.map((r) => {
+      const g = [0, 1, 2].map((k) => {
+        const p = r.partite[k]
+        return p ? { esito: p.esito, turno: p.turno, tag: [...p.tag], note: p.note } : PARTITA_VUOTA()
+      }) as BozzaRound['g']
+      return { avversario: r.avversario, g }
+    })
     setBozza({
       id: t.id,
       data: t.data,
@@ -185,27 +235,31 @@ export function TorneoView() {
       return n
     })
 
+  const svuota = () => {
+    setBozza(bozzaVuota(ultimo))
+    setMessaggio(null)
+  }
+
   return (
     <div className="space-y-3">
       <Section
         title={bozza.id ? 'Modifica torneo' : 'Nuovo torneo'}
-        hint="Ogni round è al meglio di tre contro lo stesso mazzo. Il risultato del round si calcola da solo dalle partite."
+        hint="Ogni round è al meglio di tre contro lo stesso mazzo. Ogni partita ha esito, chi ha iniziato, tag e note, e nelle statistiche conta come un match singolo."
         right={
           bozza.id ? (
-            <button
-              type="button"
-              className="btn text-xs"
-              onClick={() => {
-                setBozza(bozzaVuota(ultimo))
-                setMessaggio(null)
-              }}
-            >
+            <button type="button" className="btn text-xs" onClick={svuota}>
               Annulla modifica
             </button>
           ) : undefined
         }
       >
         <form onSubmit={salva} className="space-y-4 p-3">
+          <datalist id={ID_TAG_NOTI}>
+            {elenchi.tag.map((t) => (
+              <option key={t} value={t} />
+            ))}
+          </datalist>
+
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <Campo etichetta="Data">
               <input
@@ -309,13 +363,14 @@ export function TorneoView() {
               </span>
             </div>
 
-            <ol className="divide-y divide-ink-700/40 rounded-lg border border-ink-700/70">
+            <ol className="space-y-2">
               {bozza.round.map((r, i) => (
                 <RigaRound
                   key={i}
                   numero={i + 1}
                   round={r}
                   avversari={elenchi.avversario}
+                  tagNoti={elenchi.tag}
                   onCambia={(nuovo) => cambiaRound(i, nuovo)}
                   onRimuovi={
                     bozza.round.length > 1
@@ -331,14 +386,7 @@ export function TorneoView() {
             <button type="submit" className="btn-primary">
               {bozza.id ? 'Salva modifiche' : 'Salva torneo'}
             </button>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => {
-                setBozza(bozzaVuota(ultimo))
-                setMessaggio(null)
-              }}
-            >
+            <button type="button" className="btn" onClick={svuota}>
               Svuota
             </button>
             {messaggio && (
@@ -352,7 +400,7 @@ export function TorneoView() {
 
       <Section
         title="I miei tornei"
-        hint="Le partite dei tornei entrano anche nelle statistiche: nel filtro Torneo le trovi sotto la loro tipologia."
+        hint="Le partite dei tornei entrano nelle statistiche come match singoli: nel filtro Torneo le trovi sotto la loro tipologia."
         right={<span className="text-[11px] text-ink-400">{tornei.length} tornei</span>}
       >
         {ordinati.length === 0 ? (
@@ -425,37 +473,7 @@ export function TorneoView() {
                     </span>
                   </div>
 
-                  {aperto && (
-                    <div className="px-3 pb-3 pl-9">
-                      {t.round.length === 0 ? (
-                        <p className="text-[13px] text-ink-400">Nessun round registrato.</p>
-                      ) : (
-                        <table className="w-full max-w-xl text-sm">
-                          <tbody className="divide-y divide-ink-700/40">
-                            {t.round.map((r, i) => {
-                              const e = esitoRound(r.partite)
-                              return (
-                                <tr key={i}>
-                                  <td className="w-10 py-1 text-[11px] text-ink-400">R{i + 1}</td>
-                                  <td className="py-1 text-ink-100">{r.avversario}</td>
-                                  <td className="py-1 font-mono text-[12px] text-ink-300">
-                                    {r.partite.map((p) => (p === 'W' ? 'V' : 'S')).join(' ')}
-                                  </td>
-                                  <td className="py-1 text-right">
-                                    {e && (
-                                      <span className={`rounded border px-1.5 text-[11px] font-semibold ${COLORE_ESITO[e]}`}>
-                                        {ETICHETTA_ROUND[e]}
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  )}
+                  {aperto && <DettaglioTorneo torneo={t} />}
                 </li>
               )
             })}
@@ -463,6 +481,57 @@ export function TorneoView() {
         )}
       </Section>
     </div>
+  )
+}
+
+function DettaglioTorneo({ torneo }: { torneo: TorneoMio }) {
+  if (torneo.round.length === 0) {
+    return <p className="px-3 pb-3 pl-9 text-[13px] text-ink-400">Nessun round registrato.</p>
+  }
+  return (
+    <ol className="space-y-2 px-3 pb-3 pl-9">
+      {torneo.round.map((r, i) => {
+        const e = esitoRound(esitiDi(r))
+        return (
+          <li key={i} className="rounded-lg border border-ink-700/60 px-2.5 py-1.5">
+            <div className="flex items-baseline justify-between gap-2 text-sm">
+              <span>
+                <span className="mr-2 text-[11px] text-ink-400">R{i + 1}</span>
+                <span className="text-ink-100">{r.avversario || '—'}</span>
+              </span>
+              {e && (
+                <span className={`rounded border px-1.5 text-[11px] font-semibold ${COLORE_ESITO[e]}`}>
+                  {ETICHETTA_ROUND[e]}
+                </span>
+              )}
+            </div>
+            {r.partite.length > 0 && (
+              <ul className="mt-1 space-y-1">
+                {r.partite.map((p, k) => (
+                  <li key={k} className="flex flex-wrap items-baseline gap-x-2 text-[12px]">
+                    <span className="w-6 text-ink-400">G{k + 1}</span>
+                    <span className={`font-bold ${p.esito === 'W' ? 'text-win' : 'text-loss'}`}>
+                      {p.esito === 'W' ? 'V' : 'S'}
+                    </span>
+                    <span className="text-ink-400">{p.turno ? `${p.turno}°` : '—'}</span>
+                    {p.tag.map((t) => (
+                      <span key={t} className="chip">
+                        {t}
+                      </span>
+                    ))}
+                    {p.note && (
+                      <span className="basis-full border-l-2 border-amber-400/50 pl-2 text-[13px] leading-snug text-amber-100/90 sm:basis-auto">
+                        {p.note}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
@@ -479,20 +548,31 @@ function Scelta({
   attiva,
   onClick,
   children,
+  piccola = false,
+  etichetta,
+  tono,
 }: {
   attiva: boolean
   onClick: () => void
   children: React.ReactNode
+  piccola?: boolean
+  etichetta?: string
+  tono?: 'vinta' | 'persa'
 }) {
+  const acceso =
+    tono === 'vinta'
+      ? 'border-win/60 bg-win/20 font-bold text-win'
+      : tono === 'persa'
+        ? 'border-loss/60 bg-loss/20 font-bold text-loss'
+        : 'border-sky-500/60 bg-sky-500/15 font-semibold text-sky-100'
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={attiva}
-      className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-        attiva
-          ? 'border-sky-500/60 bg-sky-500/15 font-semibold text-sky-100'
-          : 'border-ink-700 bg-ink-850 text-ink-300 hover:border-ink-600'
+      aria-label={etichetta}
+      className={`rounded-md border transition-colors ${piccola ? 'h-7 min-w-7 px-1.5 text-xs' : 'rounded-lg px-3 py-1.5 text-sm'} ${
+        attiva ? acceso : 'border-ink-700 bg-ink-850 text-ink-300 hover:border-ink-600'
       }`}
     >
       {children}
@@ -504,89 +584,213 @@ function RigaRound({
   numero,
   round,
   avversari,
+  tagNoti,
   onCambia,
   onRimuovi,
 }: {
   numero: number
   round: BozzaRound
   avversari: string[]
+  tagNoti: string[]
   onCambia: (r: BozzaRound) => void
   onRimuovi?: () => void
 }) {
-  const partite = partiteDi(round)
-  const esito = esitoRound(partite)
-  const [a, b] = round.g
-  // Si compila in ordine, e la terza si apre solo sull'1-1.
-  const attiva = [true, a !== null, a !== null && b !== null && a !== b]
+  const esito = esitoRound(giocate(round).map((p) => p.esito))
+  const vis = visibili(round)
 
-  const imposta = (k: 0 | 1 | 2, v: Esito) => {
+  const cambiaPartita = (k: 0 | 1 | 2, p: BozzaPartita) => {
     const g = [...round.g] as BozzaRound['g']
-    g[k] = g[k] === v ? null : v
+    g[k] = p
     onCambia({ ...round, g })
   }
 
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 px-2.5 py-2">
-      <span className="w-8 text-[12px] font-semibold text-ink-400">R{numero}</span>
-      <div className="min-w-48 flex-1">
-        <CampoConElenco
-          id={`t-avv-${numero}`}
-          valore={round.avversario}
-          onChange={(v) => onCambia({ ...round, avversario: v })}
-          opzioni={avversari}
-          placeholder="Mazzo avversario"
-          className="py-1"
+    <li className="rounded-lg border border-ink-700/70">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-ink-700/50 px-2.5 py-2">
+        <span className="w-8 text-[12px] font-semibold text-ink-400">R{numero}</span>
+        <div className="min-w-48 flex-1">
+          <CampoConElenco
+            id={`t-avv-${numero}`}
+            valore={round.avversario}
+            onChange={(v) => onCambia({ ...round, avversario: v })}
+            opzioni={avversari}
+            placeholder="Mazzo avversario"
+            className="py-1"
+          />
+        </div>
+        <span className="w-20 text-right">
+          {esito ? (
+            <span className={`rounded border px-1.5 py-0.5 text-[11px] font-semibold ${COLORE_ESITO[esito]}`}>
+              {ETICHETTA_ROUND[esito]}
+            </span>
+          ) : (
+            <span className="text-[11px] text-ink-600">—</span>
+          )}
+        </span>
+        {onRimuovi && (
+          <button
+            type="button"
+            onClick={onRimuovi}
+            className="text-ink-600 hover:text-loss"
+            aria-label={`Rimuovi round ${numero}`}
+            title="Rimuovi questo round"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      <div className="divide-y divide-ink-700/30">
+        {([0, 1, 2] as const).map((k) =>
+          vis[k] ? (
+            <RigaPartita
+              key={k}
+              round={numero}
+              numero={k + 1}
+              partita={round.g[k]}
+              tagNoti={tagNoti}
+              onCambia={(p) => cambiaPartita(k, p)}
+            />
+          ) : null,
+        )}
+      </div>
+    </li>
+  )
+}
+
+function RigaPartita({
+  round,
+  numero,
+  partita,
+  tagNoti,
+  onCambia,
+}: {
+  round: number
+  numero: number
+  partita: BozzaPartita
+  tagNoti: string[]
+  onCambia: (p: BozzaPartita) => void
+}) {
+  const imposta = <K extends keyof BozzaPartita>(k: K, v: BozzaPartita[K]) => onCambia({ ...partita, [k]: v })
+
+  return (
+    <div className="space-y-1.5 px-2.5 py-2 pl-12">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="w-6 text-[11px] font-semibold text-ink-400">G{numero}</span>
+        <div className="flex gap-1">
+          {(['W', 'L'] as const).map((v) => (
+            <Scelta
+              key={v}
+              piccola
+              attiva={partita.esito === v}
+              tono={v === 'W' ? 'vinta' : 'persa'}
+              etichetta={`Round ${round}, partita ${numero} ${v === 'W' ? 'vinta' : 'persa'}`}
+              onClick={() => imposta('esito', partita.esito === v ? null : v)}
+            >
+              {v === 'W' ? 'V' : 'S'}
+            </Scelta>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          {([1, 2] as const).map((t) => (
+            <Scelta
+              key={t}
+              piccola
+              attiva={partita.turno === t}
+              etichetta={`Round ${round}, partita ${numero}: ${t === 1 ? 'inizio io' : 'rispondo'}`}
+              onClick={() => imposta('turno', partita.turno === t ? null : t)}
+            >
+              {t}°
+            </Scelta>
+          ))}
+        </div>
+        <CampoTag
+          valori={partita.tag}
+          tagNoti={tagNoti}
+          etichetta={`Tag di round ${round}, partita ${numero}`}
+          onCambia={(tag) => imposta('tag', tag)}
         />
       </div>
-      <div className="flex items-center gap-2">
-        {([0, 1, 2] as const).map((k) => (
-          <div key={k} className={`flex items-center gap-0.5 ${attiva[k] ? '' : 'opacity-30'}`}>
-            <span className="mr-0.5 text-[10px] text-ink-400">G{k + 1}</span>
-            {(['W', 'L'] as const).map((v) => {
-              const scelto = round.g[k] === v
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  disabled={!attiva[k]}
-                  onClick={() => imposta(k, v)}
-                  aria-pressed={scelto}
-                  aria-label={`Partita ${k + 1} ${v === 'W' ? 'vinta' : 'persa'}`}
-                  className={`h-7 w-7 rounded-md border text-xs font-bold transition-colors disabled:cursor-not-allowed ${
-                    scelto
-                      ? v === 'W'
-                        ? 'border-win/60 bg-win/20 text-win'
-                        : 'border-loss/60 bg-loss/20 text-loss'
-                      : 'border-ink-700 bg-ink-850 text-ink-400 hover:border-ink-600'
-                  }`}
-                >
-                  {v === 'W' ? 'V' : 'S'}
-                </button>
-              )
-            })}
-          </div>
-        ))}
-      </div>
-      <span className="w-20 text-right">
-        {esito ? (
-          <span className={`rounded border px-1.5 py-0.5 text-[11px] font-semibold ${COLORE_ESITO[esito]}`}>
-            {ETICHETTA_ROUND[esito]}
-          </span>
-        ) : (
-          <span className="text-[11px] text-ink-600">—</span>
-        )}
-      </span>
-      {onRimuovi && (
-        <button
-          type="button"
-          onClick={onRimuovi}
-          className="text-ink-600 hover:text-loss"
-          aria-label={`Rimuovi round ${numero}`}
-          title="Rimuovi questo round"
-        >
-          ×
-        </button>
-      )}
-    </li>
+      <textarea
+        className="field block min-h-8 w-full resize-y py-1 text-[13px] leading-snug"
+        rows={1}
+        placeholder={`Note di G${numero}: linee, carte chiave, errori…`}
+        aria-label={`Note di round ${round}, partita ${numero}`}
+        value={partita.note}
+        onChange={(e) => imposta('note', e.target.value)}
+      />
+    </div>
+  )
+}
+
+/**
+ * Tag di una partita: quelli scelti come chip, e un campo che suggerisce
+ * quelli gia' usati. Invio o virgola aggiungono; un tag scritto con le
+ * maiuscole diverse da uno esistente diventa quello esistente, cosi' "bad
+ * start" non nasce accanto a "Bad Start".
+ */
+function CampoTag({
+  valori,
+  tagNoti,
+  etichetta,
+  onCambia,
+}: {
+  valori: string[]
+  tagNoti: string[]
+  etichetta: string
+  onCambia: (v: string[]) => void
+}) {
+  const [testo, setTesto] = useState('')
+
+  const aggiungi = (grezzo: string) => {
+    const nuovi = grezzo
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .map((t) => tagNoti.find((n) => normalizza(n) === normalizza(t)) ?? t)
+    const tutti = [...valori]
+    for (const t of nuovi) if (!tutti.some((x) => normalizza(x) === normalizza(t))) tutti.push(t)
+    if (tutti.length !== valori.length) onCambia(tutti)
+    setTesto('')
+  }
+
+  return (
+    <div className="flex min-w-48 flex-1 flex-wrap items-center gap-1">
+      {valori.map((t) => (
+        <span key={t} className="chip-on">
+          {t}
+          <button
+            type="button"
+            className="text-sky-300/70 hover:text-sky-100"
+            aria-label={`Togli il tag ${t}`}
+            onClick={() => onCambia(valori.filter((x) => x !== t))}
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        className="field min-w-28 flex-1 py-1 text-xs"
+        list={ID_TAG_NOTI}
+        placeholder={valori.length ? '+ tag' : 'Tag (Invio per aggiungere)'}
+        aria-label={etichetta}
+        value={testo}
+        onChange={(e) => {
+          const v = e.target.value
+          if (v.includes(',')) aggiungi(v)
+          else setTesto(v)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            // Invio qui aggiunge il tag, non deve salvare tutto il torneo.
+            e.preventDefault()
+            if (testo.trim()) aggiungi(testo)
+          } else if (e.key === 'Backspace' && !testo && valori.length) {
+            onCambia(valori.slice(0, -1))
+          }
+        }}
+        onBlur={() => testo.trim() && aggiungi(testo)}
+      />
+    </div>
   )
 }

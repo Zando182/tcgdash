@@ -5,7 +5,17 @@ import { impronta, leggiDaExcel, scriviSuExcel, statoExcel, type StatoExcel } fr
 import { normalizza, oggiIso, perNome } from '../lib/format'
 import { eAmichevole, partiteDaTornei } from '../lib/tornei'
 import { storageDisponibile } from '../lib/storage'
-import type { Esito, Lista, Liste, Match, Piazzamento, Seed, TorneoMio, Turno } from '../types'
+import type {
+  Esito,
+  Lista,
+  Liste,
+  Match,
+  PartitaTorneo,
+  Piazzamento,
+  Seed,
+  TorneoMio,
+  Turno,
+} from '../types'
 import { PIAZZAMENTI, TIPOLOGIE } from '../types'
 
 const CHIAVE = 'tcgdash:registro:v1'
@@ -118,6 +128,23 @@ function sanificaLista(l: Partial<Lista> & Record<string, unknown>, i: number): 
   }
 }
 
+/**
+ * Una partita di torneo ripulita. Accetta anche il formato di prima, in cui
+ * una partita era soltanto "W" o "L".
+ */
+function sanificaPartita(g: unknown): PartitaTorneo | null {
+  const x = (typeof g === 'string' ? { esito: g } : (g ?? {})) as Record<string, unknown>
+  const esito = String(x.esito ?? '').toUpperCase()
+  if (esito !== 'W' && esito !== 'L') return null
+  const turno = Number(x.turno)
+  return {
+    esito: esito as Esito,
+    turno: turno === 1 || turno === 2 ? (turno as Turno) : null,
+    tag: Array.isArray(x.tag) ? x.tag.map((t) => String(t).trim()).filter(Boolean) : [],
+    note: typeof x.note === 'string' ? x.note.trim() : '',
+  }
+}
+
 /** Ripulisce un torneo letto da JSON o dall'Excel. */
 function sanificaTorneo(t: Partial<TorneoMio> & Record<string, unknown>, i: number): TorneoMio | null {
   const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
@@ -134,7 +161,10 @@ function sanificaTorneo(t: Partial<TorneoMio> & Record<string, unknown>, i: numb
     ? t.round.map((r) => {
         const x = (r ?? {}) as { avversario?: unknown; partite?: unknown }
         const partite = Array.isArray(x.partite)
-          ? x.partite.filter((e): e is Esito => e === 'W' || e === 'L').slice(0, 3)
+          ? x.partite
+              .map((g) => sanificaPartita(g))
+              .filter((g): g is PartitaTorneo => g !== null)
+              .slice(0, 3)
           : []
         return { avversario: str(x.avversario), partite }
       })
